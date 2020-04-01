@@ -1,46 +1,23 @@
+import abc
 import numpy as np
 import scipy
 import networkx as nx
 from functools import lru_cache
 from copy import copy
 
-class MarkovSIS():
-    """Class to simulate Markov epidemics
-    in the Susceptible-Infected-Susceptible model.
+class MarkovEpidemic(abc.ABC):
+    """Generic class to simulate Markov epidemics.
     """
     def __init__(self,
-                 infection_rate: float,
-                 recovery_rate: float,
                  G: nx.Graph,
                  simulation_method: str='fastest',
                 ) -> None:
-        self._infection_rate = infection_rate
-        self._recovery_rate = recovery_rate
         self._G = G
         self._simulation_method = simulation_method
 
         self.X = np.empty(0)
         self.transition_times = np.empty(0)
-
-    @property
-    def infection_rate(self) -> float:
-        return self._infection_rate
-    @infection_rate.setter
-    def infection_rate(self, new_infection_rate: float) -> None:
-        self._infection_rate = new_infection_rate
-
-    @property
-    def recovery_rate(self) -> float:
-        return self._recovery_rate
-    @recovery_rate.setter
-    def recovery_rate(self, new_recovery_rate: float) -> None:
-        self._recovery_rate = new_recovery_rate
-
-    @property
-    def effective_diffusion_rate(self) -> float:
-        """Ratio of infection to recovery rate.
-        """
-        return self.infection_rate / self.recovery_rate
+        self.nodes_infected_at_least_once = set()
 
     @property
     def G(self) -> nx.Graph:
@@ -103,9 +80,28 @@ class MarkovSIS():
         """
         return np.sum(self.X, axis=1)
 
+    @abc.abstractmethod
+    def transition_rates(self, Xt: np.ndarray) -> np.ndarray:
+        """Markov transition rates, depends on the type of epidemic
+        model (SIS, SIR, other...)
+        """
+        pass
+
+    def custom_init(self) -> None:
+        """If needed in for subclasses (e.g in SIR).
+        """
+        pass
+
+    def custom_postprocessing(self) -> None:
+        """If needed in for subclasses (e.g in SIR).
+        """
+        pass
+
     def simulate(self, T:float, x0: np.ndarray=np.empty(0)) -> None:
         """Simulate diffusion of Markov SIS epidemic up to time T.
         """
+        self.nodes_infected_at_least_once = set()
+
         t = 0.0
 
         # By default, start with one infected node drawn uniformly at random.
@@ -123,17 +119,15 @@ class MarkovSIS():
         # List of transition times
         transition_times = [0.0]
 
-        while t < T:
-            infected_neighbors = self.A.dot(Xt)
+        self.is_epidemic_live = True
 
+        while t < T:
             # If the epidemic died sooner than T
-            if np.sum(infected_neighbors) == 0:
+            if np.sum(Xt) == 0:
                 break
 
             # At each step, rates[i] contains the infection/curing rate of node i
-            rates = np.array(
-                [self.infection_rate * infected_neighbors[i] if Xt[i] == 0 else self.recovery_rate for i in self.G.nodes]
-            )
+            rates = self.transition_rates(Xt)
 
             if self.simulation_method == 'fastest':
                 # At each step, holding_times[i] contains the holding time of node i
@@ -168,6 +162,10 @@ class MarkovSIS():
             # Move forward
             t += dt
             transition_times.append(t)
+
+            if Xt[node] == 0:
+                self.nodes_infected_at_least_once.add(node)
+
             # Flip state of transitioned node
             Xnew = copy(Xt)
             Xnew[node] = 1 - Xnew[node]
@@ -177,3 +175,4 @@ class MarkovSIS():
 
         self.X = np.array(X)
         self.transition_times = np.array(transition_times)
+        self.T = self.X.shape[0]

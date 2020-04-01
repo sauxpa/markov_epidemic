@@ -4,7 +4,7 @@ def profile_simulation(n_sim: int=10) -> None:
     import time
     import numpy as np
     import networkx as nx
-    from .markov_epidemic import MarkovSIS
+    from .sis_epidemic import MarkovSIS
     from tqdm import tqdm
 
     infection_rate = 1.0
