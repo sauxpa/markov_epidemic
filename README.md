@@ -2,6 +2,9 @@
 
 **To install** : clone repo and pip install -e markov_epidemic/
 
+
+**To run the app** : run bokeh serve --show markov_epidemic_app/
+
 ### Susceptible-Infected-Removed (SIR)
 
 <img src="./sir_epidemic.png"
