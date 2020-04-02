@@ -43,6 +43,16 @@ class MarkovEpidemic(abc.ABC):
     def nodes_list(self) -> list:
         return list(self.G.nodes)
 
+    def random_seed_nodes(self, k):
+        """Select k nodes uniformly at random to be infectedself.
+        Returns a vector x0 such that x0[i] = 1 if i is in the seed group,
+        0 otherwise.
+        """
+        x0 = np.zeros(self.N)
+        seed_patients = np.random.choice(self.G.nodes, size=k, replace=False)
+        x0[seed_patients] = 1
+        return x0
+
     @property
     @lru_cache(maxsize=None)
     def A(self) -> scipy.sparse.csr.csr_matrix:
