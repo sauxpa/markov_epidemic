@@ -10,3 +10,9 @@
 <img src="./sir_epidemic.png"
      alt="SIR"
      style="float: left; margin-right: 10px;" />
+
+### Susceptible-Infected-Susceptible (SIS)
+
+<img src="./sis_epidemic.png"
+     alt="SIS"
+     style="float: left; margin-right: 10px;" />
