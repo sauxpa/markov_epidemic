@@ -49,9 +49,6 @@ def make_dataset_sir(graph_type,
         density_type = 'Number of attachment for new nodes'
         graph_type_str = 'Preferential attachment'
 
-    T = 5.0
-    initial_infected = 5
-
     epidemic = MarkovSIR(infection_rate, recovery_rate, G_sir)
     df_G = nx.to_pandas_edgelist(G_sir)
 
@@ -99,9 +96,6 @@ def make_dataset_sis(graph_type,
     elif graph_type == 2:
         G_sis = nx.barabasi_albert_graph(N, d)
         graph_type_str = 'Preferential attachment'
-
-    T = 5.0
-    initial_infected = 5
 
     epidemic = MarkovSIS(infection_rate, recovery_rate, G_sis)
     df_G = nx.to_pandas_edgelist(G_sis)
@@ -307,7 +301,7 @@ d_select_sir = TextInput(value='10', title='Network density')
 ir_select_sir = TextInput(value='1.0', title='Infection rate')
 rr_select_sir = TextInput(value='1.0', title='Recovery rate')
 T_select_sir = TextInput(value='5.0', title='Time horizon')
-initial_infected_select_sir = TextInput(value='5.0', title='Initial number of infected')
+initial_infected_select_sir = TextInput(value='5', title='Initial number of infected')
 
 # Update the plot when parameters are changed
 graph_type_select_sir.on_change('value', update_sir)
@@ -389,7 +383,7 @@ d_select_sis = TextInput(value='10', title='Network density')
 ir_select_sis = TextInput(value='1.0', title='Infection rate')
 rr_select_sis = TextInput(value='1.0', title='Recovery rate')
 T_select_sis = TextInput(value='5.0', title='Time horizon')
-initial_infected_select_sis = TextInput(value='5.0', title='Initial number of infected')
+initial_infected_select_sis = TextInput(value='5', title='Initial number of infected')
 
 # Update the plot when parameters are changed
 graph_type_select_sis.on_change('value', update_sis)
