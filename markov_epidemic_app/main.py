@@ -23,15 +23,31 @@ def extract_numeric_input(s: str) -> int:
             raise Exception('{:s} must be numeric.')
 
 
-def make_dataset_sir(N,
+def make_dataset_sir(graph_type,
+                     N,
+                     d,
                      infection_rate,
                      recovery_rate,
                      T,
                      initial_infected,
+                     div_,
                      ):
     """Creates a ColumnDataSource object with data to plot.
     """
-    G_sir = nx.random_regular_graph(10, N)
+
+    if graph_type == 1:
+        G_sir = nx.random_regular_graph(d, N)
+        if d == 2:
+            graph_type_str = 'Chain'
+        elif d >= N-1:
+            graph_type_str = 'Complete'
+        else:
+            graph_type_str = 'Random regular graph'
+
+    elif graph_type == 2:
+        G_sir = nx.barabasi_albert_graph(N, d)
+        graph_type_str = 'Preferential attachment'
+
     T = 5.0
     initial_infected = 5
 
@@ -43,6 +59,13 @@ def make_dataset_sir(N,
     df_sim = pd.DataFrame({'transition_times': epidemic.transition_times,
                            'fraction_infected': epidemic.number_of_infected/epidemic.N}).set_index('transition_times')
 
+    params_text = '<b>Network type:</b> {:s}<br>\
+    <ul>\
+    <li>Inverse spectral radius = {:.0%}</li>\
+    <li>Effective diffusion rate = {:.0%}</li>\
+    </ul>'.format(graph_type_str, 1/epidemic.spectral_radius, epidemic.effective_diffusion_rate)
+    div_.text = params_text
+
     # Convert dataframe to column data source#
     return ColumnDataSource(df_G), ColumnDataSource(df_sim)
 
@@ -52,7 +75,7 @@ def make_plots_sir(src_sir_G, src_sir_sim):
     """
     ### Graph plot
     plot_sir_G = Plot(plot_width=500,
-                      plot_height=500,
+                      plot_height=550,
                       x_range=Range1d(-1.1,1.1),
                       y_range=Range1d(-1.1,1.1)
                       )
@@ -88,18 +111,23 @@ def update_sir(attr, old, new):
     """Update ColumnDataSource object.
     """
     # Change p to selected value
+    graph_type_sir = graph_type_select_sir.value
     N_sir = extract_numeric_input(N_select_sir.value)
+    d_sir = extract_numeric_input(d_select_sir.value)
     ir_sir = extract_numeric_input(ir_select_sir.value)
     rr_sir = extract_numeric_input(rr_select_sir.value)
     T_sir = extract_numeric_input(T_select_sir.value)
     initial_infected_sir = extract_numeric_input(initial_infected_select_sir.value)
 
     # Create new graph
-    new_src_sir_G, new_src_sir_sim = make_dataset_sir(N_sir,
+    new_src_sir_G, new_src_sir_sim = make_dataset_sir(graph_type_sir,
+                                                      N_sir,
+                                                      d_sir,
                                                       ir_sir,
                                                       rr_sir,
                                                       T_sir,
                                                       initial_infected_sir,
+                                                      div,
                                                       )
 
     # Update the data on the plot
@@ -129,42 +157,63 @@ def update_sir(attr, old, new):
 ### SIR
 ###
 ######################################################################
+graph_type_select_sir = Slider(start=1,
+                               end=2,
+                               step=1,
+                               title='Network type',
+                               value=1,
+                               )
 
 N_select_sir = TextInput(value='50', title='Number of nodes')
+d_select_sir = TextInput(value='10', title='Network density')
 ir_select_sir = TextInput(value='1.0', title='Infection rate')
 rr_select_sir = TextInput(value='1.0', title='Recovery rate')
 T_select_sir = TextInput(value='5.0', title='Time horizon')
 initial_infected_select_sir = TextInput(value='5.0', title='Initial number of infected')
 
-# Update the plot when yields are changed
+# Update the plot when parameters are changed
+graph_type_select_sir.on_change('value', update_sir)
 N_select_sir.on_change('value', update_sir)
+d_select_sir.on_change('value', update_sir)
 ir_select_sir.on_change('value', update_sir)
 rr_select_sir.on_change('value', update_sir)
 T_select_sir.on_change('value', update_sir)
 initial_infected_select_sir.on_change('value', update_sir)
 
-controls_sir = WidgetBox(N_select_sir,
-                         ir_select_sir,
-                         rr_select_sir,
-                         T_select_sir,
-                         initial_infected_select_sir,
-                         )
-
+graph_type_sir = extract_numeric_input(graph_type_select_sir.value)
 N_sir = extract_numeric_input(N_select_sir.value)
+d_sir = extract_numeric_input(d_select_sir.value)
 ir_sir = extract_numeric_input(ir_select_sir.value)
 rr_sir = extract_numeric_input(rr_select_sir.value)
 T_sir = extract_numeric_input(T_select_sir.value)
 initial_infected_sir = extract_numeric_input(initial_infected_select_sir.value)
 
-src_sir_G, src_sir_sim = make_dataset_sir(N_sir,
+div = Div(text='<b>Parameters:</b><br>', width=300, height=150)
+
+src_sir_G, src_sir_sim = make_dataset_sir(graph_type_sir,
+                                          N_sir,
+                                          d_sir,
                                           ir_sir,
                                           rr_sir,
                                           T_sir,
                                           initial_infected_sir,
+                                          div,
                                           )
 
+controls_sir = WidgetBox(graph_type_select_sir,
+                         N_select_sir,
+                         d_select_sir,
+                         ir_select_sir,
+                         rr_select_sir,
+                         T_select_sir,
+                         initial_infected_select_sir,
+                         div,
+                         width=300,
+                         height=550,
+                         )
+
 plot_sir_G = Plot(plot_width=500,
-                  plot_height=500,
+                  plot_height=550,
                   x_range=Range1d(-1.1,1.1),
                   y_range=Range1d(-1.1,1.1)
                   )
