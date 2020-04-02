@@ -36,6 +36,7 @@ def make_dataset_sir(graph_type,
     """
     if graph_type == 1:
         G_sir = nx.random_regular_graph(d, N)
+        density_type = 'Degree'
         if d == 2:
             graph_type_str = 'Chain'
         elif d >= N-1:
@@ -45,6 +46,7 @@ def make_dataset_sir(graph_type,
 
     elif graph_type == 2:
         G_sir = nx.barabasi_albert_graph(N, d)
+        density_type = 'Number of attachment for new nodes'
         graph_type_str = 'Preferential attachment'
 
     T = 5.0
@@ -62,7 +64,12 @@ def make_dataset_sir(graph_type,
     <ul>\
     <li>Inverse spectral radius = {:.0%}</li>\
     <li>Effective diffusion rate = {:.0%}</li>\
-    </ul>'.format(graph_type_str, 1/epidemic.spectral_radius, epidemic.effective_diffusion_rate)
+    <li>Density parameter = {:s}</li>\
+    </ul>'.format(
+        graph_type_str, 1/epidemic.spectral_radius,
+        epidemic.effective_diffusion_rate,
+        density_type,
+    )
     div_.text = params_text
 
     # Convert dataframe to column data source#

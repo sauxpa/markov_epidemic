@@ -22,7 +22,74 @@
   <div class="content">
     <h1>Markov models for epidemics</h1>
 
-    {{ super() }}
+    <h2>Epidemic Markov model</h2>
+          <p> Consider a network $\mathcal{G}$ of $N$ individuals subject to an epidemic disease.
+            Let $X_i(t)$ be the health state of individual $i$ at time $t$, $0$ being "healthy", 1 being "infected",
+            and $A$ the adjacency matrix of the underlying graph $\mathcal{G}$.
+          </p>
+          <p>
+            Typically $X_i$ does not define a stationary Markov process because its transition rates are often assumed
+            to be dependent on the other nodes $X_j(t), j \neq i$. However one can define the <b>configuration process</b>
+            $\mathbb{X}(t)\in \{0, 1\}^N$ and view the epidemic as a random walk in the space of the $2^N$ possible
+            configurations of healty/infected nodes. This formulation is mostly for theoretical purpose, in practice
+            the process is much easier to describe and simulate at the node level.
+          </p>
+
+        <h2>Susceptible-Infected-Susceptible (SIS)</h2>
+        <p> In the SIS model, one assumes the following stochastic evolution:
+          $$
+          X_i(t) : \begin{cases}
+                0 \rightarrow 1 & \text{at rate $\beta\sum_j A_{ij} X_j(t)$,} \\
+                1 \rightarrow 0 & \text{at rate $\delta$.} \\
+             \end{cases}
+          $$
+          In other words, the total infection rate of an individual is proportional to the number of infected neighbors in
+          the network, each of them adding an extra $\beta$, and the recovery rate $\delta$ is constant (individuals do not recover faster if they are surrounded by
+          more healthy neighbors).
+        </p>
+        <p>
+          We also assume only one individual can change state at a given time $t$ (the events of multiple simultaneous transitions have probability zero anyway).
+
+          Note that in this model. $X_i(t)$ has no memory of its previous health states (Markov property). Consequently, it models situations where individuals can
+          be infected multiples times without developping immunity.
+        </p>
+
+        <h2>Susceptible-Infected-Removed (SIR)</h2>
+        <p>
+          In the SIR model, one assumes the same stochastic evolution with an extra state variable for each node $\varepsilon_i(t)\in \{0, 1\}$ that follows a
+          Poisson process starting at $0$ and jumping to $1$ when node $i$ gets infected. The epidemic dynamic now becomes:
+          $$
+          X_i(t) : \begin{cases}
+                0 \rightarrow 1 & \text{at rate $\beta \mathbb{1}_{\varepsilon_i(t) = 0} \sum_j A_{ij} X_j(t)$,} \\
+                1 \rightarrow 0 & \text{at rate $\delta$.} \\
+             \end{cases}
+          $$
+          In other words, the infection rate for an individual is knocked out to zero if he or she has been infected in the past. The configuration process remains
+          Markovian but is now defined on a bigger state space that needs to account for the $\varepsilon_i$.
+        </p>
+
+        <h2>Epidemic lifetime</h2>
+        <p>
+          The configuration process $\mathbb{X}$ is an irreducible Markov process on a large yet finite state space with an absorbing state (the configuration where no individual is ill).
+          It is therefore guaranteed that the process will eventually converge to this absorbing state. The question that remains is how fast this convergence occurs.
+        </p>
+        <p>
+          The <b>effective diffusion rate</b> is defined as $\rho = \frac{\beta}{\delta}$. The duration and strength of the epidemic depends on this effective diffusion rate but
+          also on the topology of the underlying social network. Intuitively, the more connected the network, the easier for the disease to spread.
+        </p>
+        <p>
+          A result in  <a href="https://people.maths.bris.ac.uk/~maajg/infocom-worm.pdf">The Effect of Network Topology on the Spread of Epidemics</a>
+          shows that the inverse of the spectral radius of the adjacency matrix $\rho(A) = \max_{\lambda\in Spec(A)}|\lambda|$ is a threshold for a phase transition in
+          the epidemic behaviour of the SIS model (the same threshold applies for SIR too). Let $T_{extinction}$ the stopping time of the epidemic:
+          <ul>
+          <li> if $\rho < \frac{1}{\rho(A)}$, then $\mathbb{E}[T_{extinction}] = \mathcal{O}\big( \log N\big)$</li>
+          <li> if $\rho \gg \frac{1}{\rho(A)}$, then $\mathbb{E}[T_{extinction}] = \Omega\big( e^{N^\alpha}\big)$, where $\alpha>0$ is a constant, and $\gg$ hides a dependency on
+             the isoperimetric constant of the underlying graph.</li>
+          </ul>
+        </p>
+
+
+  {{ super() }}
 
 
   </div>
