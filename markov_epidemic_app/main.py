@@ -120,7 +120,7 @@ def make_plots_sir(src_sir_G, src_sir_sim):
     """Create a figure object to host the plot.
     """
     ### Graph plot
-    plot_sir_G = Plot(plot_width=500,
+    plot_sir_G = Plot(plot_width=600,
                       plot_height=550,
                       x_range=Range1d(-1.1,1.1),
                       y_range=Range1d(-1.1,1.1)
@@ -133,7 +133,7 @@ def make_plots_sir(src_sir_G, src_sir_sim):
     ### Epidemic simulation figure
 
     # Blank plot with correct labels
-    plot_sir_sim = figure(plot_width=800,
+    plot_sir_sim = figure(plot_width=900,
                           plot_height=400,
                           title='SIR simulation',
                           x_axis_label='time',
@@ -159,7 +159,7 @@ def make_plots_sis(src_sis_G, src_sis_sim):
     """Create a figure object to host the plot.
     """
     ### Graph plot
-    plot_sis_G = Plot(plot_width=500,
+    plot_sis_G = Plot(plot_width=600,
                       plot_height=550,
                       x_range=Range1d(-1.1,1.1),
                       y_range=Range1d(-1.1,1.1)
@@ -172,7 +172,7 @@ def make_plots_sis(src_sis_G, src_sis_sim):
     ### Epidemic simulation figure
 
     # Blank plot with correct labels
-    plot_sis_sim = figure(plot_width=800,
+    plot_sis_sim = figure(plot_width=900,
                           plot_height=400,
                           title='SIS simulation',
                           x_axis_label='time',
@@ -344,7 +344,7 @@ controls_sir = WidgetBox(graph_type_select_sir,
                          height=550,
                          )
 
-plot_sir_G = Plot(plot_width=500,
+plot_sir_G = Plot(plot_width=600,
                   plot_height=550,
                   x_range=Range1d(-1.1,1.1),
                   y_range=Range1d(-1.1,1.1)
@@ -426,7 +426,7 @@ controls_sis = WidgetBox(graph_type_select_sis,
                          height=550,
                          )
 
-plot_sis_G = Plot(plot_width=500,
+plot_sis_G = Plot(plot_width=600,
                   plot_height=550,
                   x_range=Range1d(-1.1,1.1),
                   y_range=Range1d(-1.1,1.1)
