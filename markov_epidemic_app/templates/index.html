@@ -80,11 +80,15 @@
         <p>
           A result in  <a href="https://people.maths.bris.ac.uk/~maajg/infocom-worm.pdf">The Effect of Network Topology on the Spread of Epidemics</a>
           shows that the inverse of the spectral radius of the adjacency matrix $\rho(A) = \max_{\lambda\in Spec(A)}|\lambda|$ is a threshold for a phase transition in
-          the epidemic behaviour of the SIS model (the same threshold applies for SIR too). Let $T_{extinction}$ the stopping time of the epidemic:
+          the epidemic behaviour of the SIS model (the same threshold applies for SIR too). In addition for the SIS model, a sufficient condition for an exponentially
+          long epidemic lifetime involves the isoperimetric constant (also known as Cheeger's constant) $\eta(\mathcal{G})$ of the underlying network. Note that this
+          constant is combinatorially hard to compute but can estimated using the adjacency spectral gap.
+        </p>
+        <p>
+          Let $T_{extinction}$ the stopping time of the epidemic. Then:
           <ul>
           <li> if $\rho < \frac{1}{\rho(A)}$, then $\mathbb{E}[T_{extinction}] = \mathcal{O}\big( \log N\big)$</li>
-          <li> if $\rho \gg \frac{1}{\rho(A)}$, then $\mathbb{E}[T_{extinction}] = \Omega\big( e^{N^\alpha}\big)$, where $\alpha>0$ is a constant, and $\gg$ hides a dependency on
-             the isoperimetric constant of the underlying graph.</li>
+          <li> if $\rho > \frac{1}{\eta(\mathcal{G})}$, then $\mathbb{E}[T_{extinction}] = \Omega\big( e^{N^\alpha}\big)$, where $\alpha>0$ is a constant.</li>
           </ul>
         </p>
 

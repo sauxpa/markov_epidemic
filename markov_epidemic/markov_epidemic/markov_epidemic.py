@@ -5,6 +5,7 @@ import networkx as nx
 from functools import lru_cache
 from copy import copy
 
+
 class MarkovEpidemic(abc.ABC):
     """Generic class to simulate Markov epidemics.
     """
@@ -72,9 +73,39 @@ class MarkovEpidemic(abc.ABC):
 
     @property
     @lru_cache(maxsize=None)
-    def spectral_radius(self) -> np.ndarray:
+    def spectral_radius(self) -> float:
         return np.max(np.abs(self.spectrum))
 
+    @property
+    @lru_cache(maxsize=None)
+    def spectral_gap(self) -> float:
+        return self.spectrum[0] - self.spectrum[1]
+    
+    @property
+    @lru_cache(maxsize=None)
+    def cheeger_lower_bound(self) -> float:
+        """Lower bound for the isoperimetric constant
+        of the graph G given by its adjacency spectral gap.
+        """
+        return self.spectral_gap / 2
+    
+    @property
+    @lru_cache(maxsize=None)
+    def cheeger_upper_bound(self) -> float:
+        """Upper bound for the isoperimetric constant
+        of the graph G given by its adjacency spectral gap.
+        """
+        # Maximum degree
+        dmax = np.max(self.A.dot(np.ones(self.N)))
+        return np.sqrt(2 * dmax * self.spectral_gap)
+    
+    @property
+    def cheeger_halfway_approx(self) -> float:
+        """Approximate the isoperimetric constant of G
+        by the average of its spectral upper and lower bounds.
+        """
+        return 0.5 * (self.cheeger_lower_bound + self.cheeger_upper_bound)
+    
     def flush_graph(self) -> None:
         """Clear LRU cache of graph related properties.
         """
@@ -82,6 +113,9 @@ class MarkovEpidemic(abc.ABC):
         type(self).A.fget.cache_clear()
         type(self).spectrum.fget.cache_clear()
         type(self).spectral_radius.fget.cache_clear()
+        type(self).spectral_gap.fget.cache_clear()
+        type(self).cheeger_lower_bound.fget.cache_clear()
+        type(self).cheeger_upper_bound.fget.cache_clear()
 
     @property
     def number_of_infected(self):

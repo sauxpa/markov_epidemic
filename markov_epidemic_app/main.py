@@ -43,7 +43,6 @@ def make_dataset_sir(graph_type,
             graph_type_str = 'Complete'
         else:
             graph_type_str = 'Random regular graph'
-
     elif graph_type == 2:
         G_sir = nx.barabasi_albert_graph(N, d)
         density_type = 'Number of attachment for new nodes'
@@ -59,13 +58,17 @@ def make_dataset_sir(graph_type,
 
     params_text = '<b>Network type:</b> {:s}<br>\
     <ul>\
-    <li>Inverse spectral radius = {:.0%}</li>\
     <li>Effective diffusion rate = {:.0%}</li>\
+    <li>Inverse spectral radius = {:.0%}</li>\
+    <li>Inverse Cheeger lower bound = {:.0%}</li>\
+    <li>Inverse Cheeger upper bound = {:.0%}</li>\
     <li>Density parameter = {:s}</li>\
-    </ul>'.format(
-        graph_type_str, 1/epidemic.spectral_radius,
-        epidemic.effective_diffusion_rate,
-        density_type,
+    </ul>'.format(graph_type_str,
+                  epidemic.effective_diffusion_rate,
+                  1/epidemic.spectral_radius,
+                  1/epidemic.cheeger_lower_bound,
+                  1/epidemic.cheeger_upper_bound,
+                  density_type,
     )
     div_.text = params_text
 
@@ -86,15 +89,16 @@ def make_dataset_sis(graph_type,
     """
     if graph_type == 1:
         G_sis = nx.random_regular_graph(d, N)
+        density_type = 'Degree'
         if d == 2:
             graph_type_str = 'Chain'
         elif d >= N-1:
             graph_type_str = 'Complete'
         else:
             graph_type_str = 'Random regular graph'
-
     elif graph_type == 2:
         G_sis = nx.barabasi_albert_graph(N, d)
+        density_type = 'Number of attachment for new nodes'
         graph_type_str = 'Preferential attachment'
 
     epidemic = MarkovSIS(infection_rate, recovery_rate, G_sis)
@@ -107,9 +111,18 @@ def make_dataset_sis(graph_type,
 
     params_text = '<b>Network type:</b> {:s}<br>\
     <ul>\
-    <li>Inverse spectral radius = {:.0%}</li>\
     <li>Effective diffusion rate = {:.0%}</li>\
-    </ul>'.format(graph_type_str, 1/epidemic.spectral_radius, epidemic.effective_diffusion_rate)
+    <li>Inverse spectral radius = {:.0%}</li>\
+    <li>Lower bound for Inverse Cheeger = {:.0%}</li>\
+    <li>Upper bound for Inverse Cheeger = {:.0%}</li>\
+    <li>Density parameter = {:s}</li>\
+    </ul>'.format(graph_type_str,
+                  epidemic.effective_diffusion_rate,
+                  1/epidemic.spectral_radius,
+                  1/epidemic.cheeger_upper_bound,
+                  1/epidemic.cheeger_lower_bound,
+                  density_type,
+    )
     div_.text = params_text
 
     # Convert dataframe to column data source#
