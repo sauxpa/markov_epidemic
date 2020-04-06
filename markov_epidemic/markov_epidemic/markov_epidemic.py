@@ -124,20 +124,37 @@ class MarkovEpidemic(abc.ABC):
         """
         return np.sum(self.X, axis=1)
 
+    def deterministic_baseline(self, 
+                               T: float, 
+                               initial_infected: int,
+                               k: int,
+                               n_t_eval: int=100,
+                              ) -> tuple:
+        """Solves the deterministic baseline ODEs if they are provided in
+        the child class.
+        Corresponds to the mean-field approximation of the epidemic under
+        the assumption of a k-regular graph.
+        """
+        self.k_deterministic = k
+        solver = scipy.integrate.solve_ivp(
+            self.deterministic_baseline_ODEs, 
+            (0.0, T), 
+            self.deterministic_baseline_init(initial_infected),
+            t_eval=np.linspace(0, T, n_t_eval),
+        )
+        assert solver.success, 'Integration of deterministic baseline ODEs failed.'
+        return solver.t, solver.y
+        
+    def deterministic_baseline_ODEs(self, t:float, y: np.ndarray) -> np.ndarray:
+        raise NotImplementedError
+        
+    def deterministic_baseline_init(self, initial_infected: int) -> np.ndarray:
+        raise NotImplementedError
+    
     @abc.abstractmethod
     def transition_rates(self, Xt: np.ndarray) -> np.ndarray:
         """Markov transition rates, depends on the type of epidemic
         model (SIS, SIR, other...)
-        """
-        pass
-
-    def custom_init(self) -> None:
-        """If needed in for subclasses (e.g in SIR).
-        """
-        pass
-
-    def custom_postprocessing(self) -> None:
-        """If needed in for subclasses (e.g in SIR).
         """
         pass
 

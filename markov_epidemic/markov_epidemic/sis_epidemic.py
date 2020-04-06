@@ -45,3 +45,16 @@ class MarkovSIS(MarkovEpidemic):
         return np.array(
             [self.infection_rate * infected_neighbors[node] if Xt[node] == 0 else self.recovery_rate for node in self.G.nodes]
         )
+    
+    def deterministic_baseline_ODEs(self, t:float, y: np.ndarray) -> np.ndarray:
+        """ y = (S, I)
+        """
+        return np.array(
+            [
+                -self.infection_rate * self.k_deterministic * y[0] * y[1] / self.N + self.recovery_rate * y[1],
+                self.infection_rate * self.k_deterministic * y[0] * y[1] / self.N - self.recovery_rate * y[1],
+            ]
+        )
+    
+    def deterministic_baseline_init(self, initial_infected: int) -> np.ndarray:
+        return np.array([self.N-initial_infected, initial_infected])
