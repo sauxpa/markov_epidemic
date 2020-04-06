@@ -24,13 +24,13 @@
 
     <h2>Epidemic Markov model</h2>
           <p> Consider a network $\mathcal{G}$ of $N$ individuals subject to an epidemic disease.
-            Let $X_i(t)$ be the health state of individual $i$ at time $t$, $0$ being "healthy", 1 being "infected",
-            and $A$ the adjacency matrix of the underlying graph $\mathcal{G}$.
+            Let $A$ the adjacency matrix of the underlying graph $\mathcal{G}$ and $X_i(t)$ be the
+            health state of individual $i$ at time $t$.
           </p>
           <p>
             Typically $X_i$ does not define a stationary Markov process because its transition rates are often assumed
-            to be dependent on the other nodes $X_j(t), j \neq i$. However one can define the <b>configuration process</b>
-            $\mathbb{X}(t)\in \{0, 1\}^N$ and view the epidemic as a random walk in the space of the $2^N$ possible
+            to be dependent on the other nodes $X_j(t) for j \neq i$. However one can define the <b>configuration process</b>
+            $\mathbb{X}(t)\in \{\text{susceptible}, \text{infected}\}^N$ and view the epidemic as a random walk in the space of the $2^N$ possible
             configurations of healty/infected nodes. This formulation is mostly for theoretical purpose, in practice
             the process is much easier to describe and simulate at the node level.
           </p>
@@ -39,8 +39,8 @@
         <p> In the SIS model, one assumes the following stochastic evolution:
           $$
           X_i(t) : \begin{cases}
-                0 \rightarrow 1 & \text{at rate $\beta\sum_j A_{ij} X_j(t)$,} \\
-                1 \rightarrow 0 & \text{at rate $\delta$.} \\
+                \text{susceptible} \rightarrow \text{infected} & \text{at rate $\beta\sum_j A_{ij} X_j(t)$,} \\
+                \text{infected} \rightarrow \text{susceptible} & \text{at rate $\delta$.} \\
              \end{cases}
           $$
           In other words, the total infection rate of an individual is proportional to the number of infected neighbors in
@@ -54,18 +54,18 @@
           be infected multiples times without developping immunity.
         </p>
 
-        <h2>Susceptible-Infected-Removed (SIR)</h2>
+        <h2>Susceptible-Infected-Recovered (SIR)</h2>
         <p>
-          In the SIR model, one assumes the same stochastic evolution with an extra state variable for each node $\varepsilon_i(t)\in \{0, 1\}$ that follows a
-          Poisson process starting at $0$ and jumping to $1$ when node $i$ gets infected. The epidemic dynamic now becomes:
+          In the SIR model, one assumes the same stochastic evolution with an extra state for recovered individuals, i.e previously infected but now immune.
+          The epidemic dynamic now becomes:
           $$
           X_i(t) : \begin{cases}
-                0 \rightarrow 1 & \text{at rate $\beta \mathbb{1}_{\varepsilon_i(t) = 0} \sum_j A_{ij} X_j(t)$,} \\
-                1 \rightarrow 0 & \text{at rate $\delta$.} \\
+                \text{susceptible} \rightarrow \text{infected} & \text{at rate $\beta \sum_j A_{ij} X_j(t)$,} \\
+                \text{infected} \rightarrow \text{recovered} & \text{at rate $\delta$.} \\
              \end{cases}
           $$
           In other words, the infection rate for an individual is knocked out to zero if he or she has been infected in the past. The configuration process remains
-          Markovian but is now defined on a bigger state space that needs to account for the $\varepsilon_i$.
+          Markovian but is now defined on a bigger state space with $3^N$ configurations to account for the extra state.
         </p>
 
         <h2>Epidemic lifetime</h2>
