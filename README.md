@@ -21,3 +21,9 @@ Enjoy while you stay indoors helping us reduce our spectral radius :)
 <img src="./sis_epidemic.png"
      alt="SIS"
      style="float: left; margin-right: 10px;" />
+
+### Susceptible-Exposed-Infected-Susceptible (SEIR)
+
+<img src="./seir_epidemic.png"
+     alt="SEIR"
+     style="float: left; margin-right: 10px;" />
