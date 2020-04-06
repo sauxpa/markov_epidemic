@@ -39,7 +39,7 @@
         <p> In the SIS model, one assumes the following stochastic evolution:
           $$
           X_i(t) : \begin{cases}
-                \text{susceptible} \rightarrow \text{infected} & \text{at rate $\beta\sum_j A_{ij} X_j(t)$,} \\
+                \text{susceptible} \rightarrow \text{infected} & \text{at rate $\beta\sum_j A_{ij} \mathbb{1}_{X_j(t) = \text{infected}}$,} \\
                 \text{infected} \rightarrow \text{susceptible} & \text{at rate $\delta$.} \\
              \end{cases}
           $$
@@ -60,7 +60,7 @@
           The epidemic dynamic now becomes:
           $$
           X_i(t) : \begin{cases}
-                \text{susceptible} \rightarrow \text{infected} & \text{at rate $\beta \sum_j A_{ij} X_j(t)$,} \\
+                \text{susceptible} \rightarrow \text{infected} & \text{at rate $\beta \sum_j A_{ij} \mathbb{1}_{X_j(t) = \text{infected}}$,} \\
                 \text{infected} \rightarrow \text{recovered} & \text{at rate $\delta$.} \\
              \end{cases}
           $$
