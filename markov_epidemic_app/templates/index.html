@@ -68,6 +68,20 @@
           Markovian but is now defined on a bigger state space with $3^N$ configurations to account for the extra state.
         </p>
 
+        <h2>Susceptible-Exposed-Infected-Recovered (SEIR)</h2>
+        <p>
+          In the SEIR model, one assumes the same stochastic evolution as SIR with an extra state to represent incubation time during which individuals are not contagious
+          but are bound to become infected.
+          The epidemic dynamic is now:
+          $$
+          X_i(t) : \begin{cases}
+                \text{susceptible} \rightarrow \text{exposed} & \text{at rate $\beta \sum_j A_{ij} \mathbb{1}_{X_j(t) = \text{infected}}$,} \\
+                \text{exposed} \rightarrow \text{infected} & \text{at rate $\gamma$,} \\
+                \text{infected} \rightarrow \text{recovered} & \text{at rate $\delta$.} \\
+             \end{cases}
+          $$
+        </p>
+
         <h2>Epidemic lifetime</h2>
         <p>
           The configuration process $\mathbb{X}$ is an irreducible Markov process on a large yet finite state space with an absorbing state (the configuration where no individual is ill).
