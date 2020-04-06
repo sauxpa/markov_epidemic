@@ -10,7 +10,7 @@ Enjoy while you stay indoors helping us reduce our spectral radius :)
 
 **To run the app** : run bokeh serve --show markov_epidemic_app/
 
-### Susceptible-Infected-Removed (SIR)
+### Susceptible-Infected-Recovered (SIR)
 
 <img src="./sir_epidemic.png"
      alt="SIR"
