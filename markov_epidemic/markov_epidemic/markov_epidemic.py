@@ -25,13 +25,13 @@ class MarkovEpidemic(abc.ABC):
         """Susceptible is state 0.
         """
         return 0
-    
+
     @property
     def infected(self) -> int:
         """Infected is state 1.
         """
         return 1
-    
+
     @property
     def G(self) -> nx.Graph:
         return self._G
@@ -92,7 +92,7 @@ class MarkovEpidemic(abc.ABC):
     @lru_cache(maxsize=None)
     def spectral_gap(self) -> float:
         return self.spectrum[0] - self.spectrum[1]
-    
+
     @property
     @lru_cache(maxsize=None)
     def cheeger_lower_bound(self) -> float:
@@ -100,7 +100,7 @@ class MarkovEpidemic(abc.ABC):
         of the graph G given by its adjacency spectral gap.
         """
         return self.spectral_gap / 2
-    
+
     @property
     @lru_cache(maxsize=None)
     def cheeger_upper_bound(self) -> float:
@@ -110,14 +110,14 @@ class MarkovEpidemic(abc.ABC):
         # Maximum degree
         dmax = np.max(self.A.dot(np.ones(self.N)))
         return np.sqrt(2 * dmax * self.spectral_gap)
-    
+
     @property
     def cheeger_halfway_approx(self) -> float:
         """Approximate the isoperimetric constant of G
         by the average of its spectral upper and lower bounds.
         """
         return 0.5 * (self.cheeger_lower_bound + self.cheeger_upper_bound)
-    
+
     def flush_graph(self) -> None:
         """Clear LRU cache of graph related properties.
         """
@@ -130,21 +130,27 @@ class MarkovEpidemic(abc.ABC):
         type(self).cheeger_upper_bound.fget.cache_clear()
 
     @property
-    def number_of_susceptible(self):
+    def number_of_susceptible(self) -> int:
         """Returns the number of susceptible individuals at
         each transition time of the simulated epidemic.
         """
         return np.sum(self.X == self.susceptible, axis=1)
-    
+
     @property
-    def number_of_infected(self):
+    def number_of_infected(self) -> int:
         """Returns the number of infected individuals at
         each transition time of the simulated epidemic.
         """
         return np.sum(self.X == self.infected, axis=1)
 
-    def deterministic_baseline(self, 
-                               T: float, 
+    def number_infected_neighbors(self, Xt: np.ndarray) -> np.ndarray:
+        """Returns the vector of number of infected neighbors given a
+        state vector Xt.
+        """
+        return self.A.dot(Xt == self.infected)
+
+    def deterministic_baseline(self,
+                               T: float,
                                initial_infected: int,
                                k: int,
                                n_t_eval: int=100,
@@ -156,33 +162,43 @@ class MarkovEpidemic(abc.ABC):
         """
         self.k_deterministic = k
         solver = scipy.integrate.solve_ivp(
-            self.deterministic_baseline_ODEs, 
-            (0.0, T), 
+            self.deterministic_baseline_ODEs,
+            (0.0, T),
             self.deterministic_baseline_init(initial_infected),
             t_eval=np.linspace(0.0, T, n_t_eval),
         )
         assert solver.success, 'Integration of deterministic baseline ODEs failed.'
         return solver.t, solver.y
-        
+
     def deterministic_baseline_ODEs(self, t:float, y: np.ndarray) -> np.ndarray:
         raise NotImplementedError
-        
+
     def deterministic_baseline_init(self, initial_infected: int) -> np.ndarray:
         raise NotImplementedError
-    
+
     @abc.abstractmethod
     def transition_rates(self, Xt: np.ndarray) -> np.ndarray:
         """Markov transition rates, depends on the type of epidemic
         model (SIS, SIR, other...)
         """
         pass
-    
+
     @abc.abstractmethod
     def next_state(self, state: int) -> int:
         """To be implemented in a child class.
         Advance node to its new state. Depending on the model, the number
         and type of states may differ (e.g SIS only allows S->I and I->S
         whereas SIR allows S->I and I->R).
+        """
+        pass
+
+    @abc.abstractmethod
+    def is_epidemic_over(self, Xt: np.ndarray) -> bool:
+        """Returns True if all nodes are in a terminal state.
+        This depends on the model, e.g in SIS and SIR it is enough
+        to have no infected nodes, but in the SEIR model the epidemic
+        might continue even if no node is infected, as long as some nodes
+        are exposed.
         """
         pass
 
@@ -208,7 +224,7 @@ class MarkovEpidemic(abc.ABC):
 
         while t < T:
             # If the epidemic died sooner than T
-            if np.sum(Xt == self.infected) == 0:
+            if self.is_epidemic_over(Xt):
                 break
 
             # At each step, rates[i] contains the infection/curing rate of node i

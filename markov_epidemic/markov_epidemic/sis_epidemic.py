@@ -41,11 +41,11 @@ class MarkovSIS(MarkovEpidemic):
         return self.infection_rate / self.recovery_rate
 
     def transition_rates(self, Xt: np.ndarray) -> np.ndarray:
-        infected_neighbors = self.A.dot(Xt)
+        num_infected_neighbors = self.number_infected_neighbors(Xt)
         return np.array(
-            [self.infection_rate * infected_neighbors[node] if Xt[node] == 0 else self.recovery_rate for node in self.G.nodes]
+            [self.infection_rate * num_infected_neighbors[node] if Xt[node] == 0 else self.recovery_rate for node in self.G.nodes]
         )
-    
+
     def next_state(self, x: int) -> int:
         if x == self.susceptible:
             return self.infected
@@ -53,6 +53,9 @@ class MarkovSIS(MarkovEpidemic):
             return self.susceptible
         else:
             raise ValueError('Unknown state')
+
+    def is_epidemic_over(self, Xt: np.ndarray) -> bool:
+        return np.sum(Xt == self.infected) == 0
 
     def deterministic_baseline_ODEs(self, t:float, y: np.ndarray) -> np.ndarray:
         """ y = (S, I)
@@ -63,6 +66,6 @@ class MarkovSIS(MarkovEpidemic):
                 self.infection_rate * self.k_deterministic * y[0] * y[1] / self.N - self.recovery_rate * y[1],
             ]
         )
-    
+
     def deterministic_baseline_init(self, initial_infected: int) -> np.ndarray:
         return np.array([self.N-initial_infected, initial_infected])
