@@ -63,14 +63,14 @@ def make_dataset_sir(graph_type,
     <ul>\
     <li>Effective diffusion rate = {:.0%}</li>\
     <li>Inverse spectral radius = {:.0%}</li>\
-    <li>Inverse Cheeger lower bound = {:.0%}</li>\
-    <li>Inverse Cheeger upper bound = {:.0%}</li>\
+    <li>Lower bound for Inverse Cheeger = {:.0%}</li>\
+    <li>Upper bound for Inverse Cheeger = {:.0%}</li>\
     <li>Density parameter = {:s}</li>\
     </ul>'.format(graph_type_str,
                   epidemic.effective_diffusion_rate,
                   1/epidemic.spectral_radius,
-                  1/epidemic.cheeger_lower_bound,
                   1/epidemic.cheeger_upper_bound,
+                  1/epidemic.cheeger_lower_bound,
                   density_type,
     )
     div_.text = params_text
@@ -177,14 +177,14 @@ def make_dataset_seir(graph_type,
     <ul>\
     <li>Effective diffusion rate = {:.0%}</li>\
     <li>Inverse spectral radius = {:.0%}</li>\
-    <li>Inverse Cheeger lower bound = {:.0%}</li>\
-    <li>Inverse Cheeger upper bound = {:.0%}</li>\
+    <li>Lower bound for Inverse Cheeger = {:.0%}</li>\
+    <li>Upper bound for Inverse Cheeger = {:.0%}</li>\
     <li>Density parameter = {:s}</li>\
     </ul>'.format(graph_type_str,
                   epidemic.effective_diffusion_rate,
                   1/epidemic.spectral_radius,
-                  1/epidemic.cheeger_lower_bound,
                   1/epidemic.cheeger_upper_bound,
+                  1/epidemic.cheeger_lower_bound,
                   density_type,
     )
     div_.text = params_text
@@ -295,7 +295,7 @@ def make_plots_seir(src_seir_G, src_seir_sim):
     """
     ### Graph plot
     plot_seir_G = Plot(plot_width=600,
-                       plot_height=550,
+                       plot_height=650,
                        x_range=Range1d(-1.1,1.1),
                        y_range=Range1d(-1.1,1.1)
                        )
@@ -708,7 +708,7 @@ rr_seir = extract_numeric_input(rr_select_seir.value)
 T_seir = extract_numeric_input(T_select_seir.value)
 initial_infected_seir = extract_numeric_input(initial_infected_select_seir.value)
 
-div_seir = Div(text='<b>Network type:</b><br>', width=300, height=150)
+div_seir = Div(text='<b>Network type:</b><br>', width=300, height=200)
 
 src_seir_G, src_seir_sim = make_dataset_seir(graph_type_seir,
                                              N_seir,
@@ -731,7 +731,7 @@ controls_seir = WidgetBox(graph_type_select_seir,
                           initial_infected_select_seir,
                           div_seir,
                           width=300,
-                          height=550,
+                          height=650,
                           )
 
 plot_seir_G = Plot(plot_width=600,
