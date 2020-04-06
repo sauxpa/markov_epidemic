@@ -4,7 +4,7 @@ from .markov_epidemic import MarkovEpidemic
 
 class MarkovSIR(MarkovEpidemic):
     """Class to simulate Markov epidemics
-    in the Susceptible-Infected-Removed model.
+    in the Susceptible-Infected-Recovered model.
     """
     def __init__(self,
                  infection_rate: float,
@@ -20,6 +20,12 @@ class MarkovSIR(MarkovEpidemic):
         self.X = np.empty(0)
         self.transition_times = np.empty(0)
 
+    @property
+    def recovered(self) -> int:
+        """Recovered is state 2.
+        """
+        return 2
+        
     @property
     def infection_rate(self) -> float:
         return self._infection_rate
@@ -40,13 +46,23 @@ class MarkovSIR(MarkovEpidemic):
         """
         return self.infection_rate / self.recovery_rate
 
+    def next_state(self, x: int) -> int:
+        if x == self.susceptible:
+            return self.infected
+        elif x == self.infected:
+            return self.recovered
+        elif x == self.recovered:
+            raise ValueError('Should not have transition starting from recovered state')
+        else:
+            raise ValueError('Unknown state')
+            
     def transition_rates(self, Xt: np.ndarray) -> np.ndarray:
         infected_neighbors = self.A.dot(Xt)
 
         return np.array(
             [
-                0 if node in self.nodes_infected_at_least_once and Xt[node] == 0\
-                else (self.infection_rate * infected_neighbors[node] if Xt[node] == 0 else self.recovery_rate)\
+                0 if Xt[node] == self.recovered\
+                else (self.infection_rate * infected_neighbors[node] if Xt[node] == self.susceptible else self.recovery_rate)\
                 for node in self.G.nodes
             ]
         )

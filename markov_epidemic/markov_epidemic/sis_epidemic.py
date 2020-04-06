@@ -46,6 +46,14 @@ class MarkovSIS(MarkovEpidemic):
             [self.infection_rate * infected_neighbors[node] if Xt[node] == 0 else self.recovery_rate for node in self.G.nodes]
         )
     
+    def next_state(self, x: int) -> int:
+        if x == self.susceptible:
+            return self.infected
+        elif x == self.infected:
+            return self.susceptible
+        else:
+            raise ValueError('Unknown state')
+
     def deterministic_baseline_ODEs(self, t:float, y: np.ndarray) -> np.ndarray:
         """ y = (S, I)
         """

@@ -21,6 +21,18 @@ class MarkovEpidemic(abc.ABC):
         self.nodes_infected_at_least_once = set()
 
     @property
+    def susceptible(self) -> int:
+        """Susceptible is state 0.
+        """
+        return 0
+    
+    @property
+    def infected(self) -> int:
+        """Infected is state 1.
+        """
+        return 1
+    
+    @property
     def G(self) -> nx.Graph:
         return self._G
     @G.setter
@@ -51,7 +63,7 @@ class MarkovEpidemic(abc.ABC):
         """
         x0 = np.zeros(self.N)
         seed_patients = np.random.choice(self.G.nodes, size=k, replace=False)
-        x0[seed_patients] = 1
+        x0[seed_patients] = self.infected
         return x0
 
     @property
@@ -118,11 +130,18 @@ class MarkovEpidemic(abc.ABC):
         type(self).cheeger_upper_bound.fget.cache_clear()
 
     @property
+    def number_of_susceptible(self):
+        """Returns the number of susceptible individuals at
+        each transition time of the simulated epidemic.
+        """
+        return np.sum(self.X == self.susceptible, axis=1)
+    
+    @property
     def number_of_infected(self):
         """Returns the number of infected individuals at
         each transition time of the simulated epidemic.
         """
-        return np.sum(self.X, axis=1)
+        return np.sum(self.X == self.infected, axis=1)
 
     def deterministic_baseline(self, 
                                T: float, 
@@ -140,7 +159,7 @@ class MarkovEpidemic(abc.ABC):
             self.deterministic_baseline_ODEs, 
             (0.0, T), 
             self.deterministic_baseline_init(initial_infected),
-            t_eval=np.linspace(0, T, n_t_eval),
+            t_eval=np.linspace(0.0, T, n_t_eval),
         )
         assert solver.success, 'Integration of deterministic baseline ODEs failed.'
         return solver.t, solver.y
@@ -157,21 +176,28 @@ class MarkovEpidemic(abc.ABC):
         model (SIS, SIR, other...)
         """
         pass
+    
+    @abc.abstractmethod
+    def next_state(self, state: int) -> int:
+        """To be implemented in a child class.
+        Advance node to its new state. Depending on the model, the number
+        and type of states may differ (e.g SIS only allows S->I and I->S
+        whereas SIR allows S->I and I->R).
+        """
+        pass
 
     def simulate(self, T:float, x0: np.ndarray=np.empty(0)) -> None:
-        """Simulate diffusion of Markov SIS epidemic up to time T.
+        """Simulate diffusion of Markov epidemic up to time T.
         """
-        self.nodes_infected_at_least_once = set()
-
         t = 0.0
 
         # By default, start with one infected node drawn uniformly at random.
         if len(x0) == 0:
             node = np.random.choice(self.G.nodes)
-            Xt = np.zeros(self.N)
-            Xt[node] = 1
+            Xt = np.zeros(self.N, dtype='int')
+            Xt[node] = self.infected
         else:
-            Xt = x0
+            Xt = x0.astype('int')
 
         # List of state vectors of unknown size
         # (each random transition before T adds a row of size N)
@@ -180,11 +206,9 @@ class MarkovEpidemic(abc.ABC):
         # List of transition times
         transition_times = [0.0]
 
-        self.is_epidemic_live = True
-
         while t < T:
             # If the epidemic died sooner than T
-            if np.sum(Xt) == 0:
+            if np.sum(Xt == self.infected) == 0:
                 break
 
             # At each step, rates[i] contains the infection/curing rate of node i
@@ -224,12 +248,9 @@ class MarkovEpidemic(abc.ABC):
             t += dt
             transition_times.append(t)
 
-            if Xt[node] == 0:
-                self.nodes_infected_at_least_once.add(node)
-
-            # Flip state of transitioned node
+            # Change state of transitioned node
             Xnew = copy(Xt)
-            Xnew[node] = 1 - Xnew[node]
+            Xnew[node] = self.next_state(Xt[node])
             Xt = Xnew
 
             X.append(Xt)
