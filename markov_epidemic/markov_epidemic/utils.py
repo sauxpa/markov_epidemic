@@ -45,7 +45,7 @@ def period_estimator(transition_times: np.ndarray,
     xcorr, xcorr_tt = calculate_xcorr(transition_times[:-1],
                                       np.diff(number_of_infected),
                                       interp_kind=interp_kind,
-                                      sampling_stepsampling_step=,
+                                      sampling_step=sampling_step,
                                       )
 
      # Smooth autocorrelogram to detect real peaks
