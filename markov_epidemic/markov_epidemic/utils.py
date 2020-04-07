@@ -22,6 +22,9 @@ def calculate_xcorr(transition_times: np.ndarray,
     # Calculate autocorrelogram
     xcorr = np.correlate(signal_resampled, signal_resampled, 'full')
     xcorr_tt = np.concatenate([-tt[::-1], tt[1:]])
+
+    # Normalize between -1 and 1
+    xcorr /= np.max(xcorr)
     return xcorr, xcorr_tt
 
 
