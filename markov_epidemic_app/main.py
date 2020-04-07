@@ -11,6 +11,7 @@ from bokeh.layouts import layout, WidgetBox
 from bokeh.plotting import figure
 from bokeh.models import NumeralTickFormatter
 
+N_GRAPH_TYPES = 5
 
 def extract_numeric_input(s: str) -> int:
     try:
@@ -35,9 +36,36 @@ def graph_type_mgr(graph_type, N, d):
         else:
             graph_type_str = 'Random regular graph'
     elif graph_type == 2:
+        G = nx.gnp_random_graph(N, d)
+        density_type = 'Independent edge probability'
+        if d >= 1:
+            graph_type_str = 'Complete graph'
+        else:
+            graph_type_str = 'Erdos-Renyi'
+    elif graph_type == 3:
         G = nx.barabasi_albert_graph(N, d)
         density_type = 'Number of attachment for new nodes'
         graph_type_str = 'Preferential attachment'
+    elif graph_type == 4:
+        h = int(np.floor(np.log(N*(d-2) + 1)/np.log(d-1))) - 1
+        # Consider one extra height level in the tree...
+        G = nx.balanced_tree(d-1, h+1)
+        # ... and remove the additional nodes to have N nodes.
+        G = nx.Graph(G.subgraph(list(G.nodes)[:N]))
+        density_type = 'Degree'
+        graph_type_str = 'Balanced tree'
+    elif graph_type == 5:
+        if (N - d) % 2 == 0:
+            n = (N - d) // 2
+        else:
+            n = (N - d) // 2
+            d += 1
+        G = nx.barbell_graph(n, d)
+        density_type = 'Bridge length'
+        graph_type_str = 'Barbell'
+    else:
+        raise ValueError('Unknown graph type.')
+
     return G, density_type, graph_type_str
 
 
@@ -239,14 +267,14 @@ def make_plots_sir(src_sir_G, src_sir_degree_hist, src_sir_sim):
     ### Epidemic simulation figure
 
     # Blank plot with correct labels
-    plot_sir_sim_infected = figure(plot_width=900,
+    plot_sir_sim_infected = figure(plot_width=1000,
                                    plot_height=400,
                                    title='Number of infected individuals',
                                    x_axis_label='time',
                                    y_axis_label='% population infected',
                                    )
 
-    plot_sir_sim_recovered = figure(plot_width=900,
+    plot_sir_sim_recovered = figure(plot_width=1000,
                                     plot_height=400,
                                     title='Number of recovered individuals',
                                     x_axis_label='time',
@@ -312,7 +340,7 @@ def make_plots_sis(src_sis_G, src_sis_degree_hist, src_sis_sim):
     ### Epidemic simulation figure
 
     # Blank plot with correct labels
-    plot_sis_sim_infected = figure(plot_width=900,
+    plot_sis_sim_infected = figure(plot_width=1000,
                                    plot_height=400,
                                    title='Number of infected individuals',
                                    x_axis_label='time',
@@ -365,7 +393,7 @@ def make_plots_seir(src_seir_G, src_seir_degree_hist, src_seir_sim, src_seir_xco
     ### Epidemic simulation figure
 
     # Blank plot with correct labels
-    plot_seir_sim_infected = figure(plot_width=900,
+    plot_seir_sim_infected = figure(plot_width=1000,
                                     plot_height=400,
                                     title='Number of infected individuals',
                                     x_axis_label='time',
@@ -373,21 +401,21 @@ def make_plots_seir(src_seir_G, src_seir_degree_hist, src_seir_sim, src_seir_xco
                                     )
 
     # Blank plot with correct labels
-    plot_seir_xcorr_infected = figure(plot_width=600,
+    plot_seir_xcorr_infected = figure(plot_width=700,
                                       plot_height=400,
                                       title='Autocorrelogram of new infection cases',
                                       x_axis_label='lag',
                                       y_axis_label='% autocorrelation',
                                       )
 
-    plot_seir_sim_exposed = figure(plot_width=900,
+    plot_seir_sim_exposed = figure(plot_width=1000,
                                    plot_height=400,
                                    title='Number of exposed individuals',
                                    x_axis_label='time',
                                    y_axis_label='% population exposed',
                                    )
 
-    plot_seir_sim_recovered = figure(plot_width=900,
+    plot_seir_sim_recovered = figure(plot_width=1000,
                                      plot_height=400,
                                      title='Number of recovered individuals',
                                      x_axis_label='time',
@@ -589,7 +617,7 @@ def update_seir(attr, old, new):
 ###
 ######################################################################
 graph_type_select_sir = Slider(start=1,
-                               end=2,
+                               end=N_GRAPH_TYPES,
                                step=1,
                                title='Network type',
                                value=1,
@@ -619,7 +647,7 @@ rr_sir = extract_numeric_input(rr_select_sir.value)
 T_sir = extract_numeric_input(T_select_sir.value)
 initial_infected_sir = extract_numeric_input(initial_infected_select_sir.value)
 
-div_sir = Div(text='<b>Network type:</b><br>', width=300, height=150)
+div_sir = Div(text='<b>Network type:</b><br>', width=400, height=150)
 
 src_sir_G, src_sir_degree_hist, src_sir_sim = make_dataset_sir(graph_type_sir,
                                                                N_sir,
@@ -639,7 +667,7 @@ controls_sir = WidgetBox(graph_type_select_sir,
                          T_select_sir,
                          initial_infected_select_sir,
                          div_sir,
-                         width=300,
+                         width=400,
                          height=550,
                          )
 
@@ -677,7 +705,7 @@ tab_sir = Panel(child=layout_sir, title='SIR')
 ###
 ######################################################################
 graph_type_select_sis = Slider(start=1,
-                               end=2,
+                               end=N_GRAPH_TYPES,
                                step=1,
                                title='Network type',
                                value=1,
@@ -707,7 +735,7 @@ rr_sis = extract_numeric_input(rr_select_sis.value)
 T_sis = extract_numeric_input(T_select_sis.value)
 initial_infected_sis = extract_numeric_input(initial_infected_select_sis.value)
 
-div_sis = Div(text='<b>Network type:</b><br>', width=300, height=150)
+div_sis = Div(text='<b>Network type:</b><br>', width=400, height=150)
 
 src_sis_G, src_sis_degree_hist, src_sis_sim = make_dataset_sis(graph_type_sis,
                                                                N_sis,
@@ -727,7 +755,7 @@ controls_sis = WidgetBox(graph_type_select_sis,
                          T_select_sis,
                          initial_infected_select_sis,
                          div_sis,
-                         width=300,
+                         width=400,
                          height=550,
                          )
 
@@ -762,7 +790,7 @@ tab_sis = Panel(child=layout_sis, title='SIS')
 ###
 ######################################################################
 graph_type_select_seir = Slider(start=1,
-                                end=2,
+                                end=N_GRAPH_TYPES,
                                 step=1,
                                 title='Network type',
                                 value=1,
@@ -795,7 +823,7 @@ rr_seir = extract_numeric_input(rr_select_seir.value)
 T_seir = extract_numeric_input(T_select_seir.value)
 initial_infected_seir = extract_numeric_input(initial_infected_select_seir.value)
 
-div_seir = Div(text='<b>Network type:</b><br>', width=300, height=200)
+div_seir = Div(text='<b>Network type:</b><br>', width=400, height=200)
 
 src_seir_G, src_seir_degree_hist, src_seir_sim, src_seir_xcorr =\
  make_dataset_seir(graph_type_seir,
@@ -818,7 +846,7 @@ controls_seir = WidgetBox(graph_type_select_seir,
                           T_select_seir,
                           initial_infected_select_seir,
                           div_seir,
-                          width=300,
+                          width=400,
                           height=650,
                           )
 
