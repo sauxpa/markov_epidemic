@@ -11,6 +11,7 @@ from bokeh.layouts import layout, WidgetBox
 from bokeh.plotting import figure
 from bokeh.models import NumeralTickFormatter
 
+
 def extract_numeric_input(s: str) -> int:
     try:
         int(s)
@@ -21,6 +22,23 @@ def extract_numeric_input(s: str) -> int:
             return float(s)
         except:
             raise Exception('{:s} must be numeric.')
+
+
+def graph_type_mgr(graph_type, N, d):
+    if graph_type == 1:
+        G = nx.random_regular_graph(d, N)
+        density_type = 'Degree'
+        if d == 2:
+            graph_type_str = 'Chain'
+        elif d >= N-1:
+            graph_type_str = 'Complete'
+        else:
+            graph_type_str = 'Random regular graph'
+    elif graph_type == 2:
+        G = nx.barabasi_albert_graph(N, d)
+        density_type = 'Number of attachment for new nodes'
+        graph_type_str = 'Preferential attachment'
+    return G, density_type, graph_type_str
 
 
 def make_dataset_sir(graph_type,
@@ -34,19 +52,7 @@ def make_dataset_sir(graph_type,
                      ):
     """Creates a ColumnDataSource object with data to plot.
     """
-    if graph_type == 1:
-        G_sir = nx.random_regular_graph(d, N)
-        density_type = 'Degree'
-        if d == 2:
-            graph_type_str = 'Chain'
-        elif d >= N-1:
-            graph_type_str = 'Complete'
-        else:
-            graph_type_str = 'Random regular graph'
-    elif graph_type == 2:
-        G_sir = nx.barabasi_albert_graph(N, d)
-        density_type = 'Number of attachment for new nodes'
-        graph_type_str = 'Preferential attachment'
+    G_sir, density_type, graph_type_str = graph_type_mgr(graph_type, N, d)
 
     epidemic = MarkovSIR(infection_rate, recovery_rate, G_sir)
     df_G = nx.to_pandas_edgelist(G_sir)
@@ -97,19 +103,7 @@ def make_dataset_sis(graph_type,
                      ):
     """Creates a ColumnDataSource object with data to plot.
     """
-    if graph_type == 1:
-        G_sis = nx.random_regular_graph(d, N)
-        density_type = 'Degree'
-        if d == 2:
-            graph_type_str = 'Chain'
-        elif d >= N-1:
-            graph_type_str = 'Complete'
-        else:
-            graph_type_str = 'Random regular graph'
-    elif graph_type == 2:
-        G_sis = nx.barabasi_albert_graph(N, d)
-        density_type = 'Number of attachment for new nodes'
-        graph_type_str = 'Preferential attachment'
+    G_sis, density_type, graph_type_str = graph_type_mgr(graph_type, N, d)
 
     epidemic = MarkovSIS(infection_rate, recovery_rate, G_sis)
     df_G = nx.to_pandas_edgelist(G_sis)
@@ -161,19 +155,7 @@ def make_dataset_seir(graph_type,
                       ):
     """Creates a ColumnDataSource object with data to plot.
     """
-    if graph_type == 1:
-        G_seir = nx.random_regular_graph(d, N)
-        density_type = 'Degree'
-        if d == 2:
-            graph_type_str = 'Chain'
-        elif d >= N-1:
-            graph_type_str = 'Complete'
-        else:
-            graph_type_str = 'Random regular graph'
-    elif graph_type == 2:
-        G_seir = nx.barabasi_albert_graph(N, d)
-        density_type = 'Number of attachment for new nodes'
-        graph_type_str = 'Preferential attachment'
+    G_seir, density_type, graph_type_str = graph_type_mgr(graph_type, N, d)
 
     epidemic = MarkovSEIR(exposition_rate, infection_rate, recovery_rate, G_seir)
     df_G = nx.to_pandas_edgelist(G_seir)
