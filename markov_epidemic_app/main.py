@@ -51,6 +51,13 @@ def make_dataset_sir(graph_type,
     epidemic = MarkovSIR(infection_rate, recovery_rate, G_sir)
     df_G = nx.to_pandas_edgelist(G_sir)
 
+    hist, edges = np.histogram(nx.adjacency_matrix(G_sir).dot(np.ones(N)), density=True, bins=50)
+    df_degree_hist = pd.DataFrame({'top': hist,
+                                   'bottom': 0,
+                                   'left': edges[:-1],
+                                   'right': edges[1:],
+                                   })
+
     epidemic.simulate(T, epidemic.random_seed_nodes(initial_infected))
 
     df_sim = pd.DataFrame({
@@ -76,7 +83,7 @@ def make_dataset_sir(graph_type,
     div_.text = params_text
 
     # Convert dataframe to column data source#
-    return ColumnDataSource(df_G), ColumnDataSource(df_sim)
+    return ColumnDataSource(df_G), ColumnDataSource(df_degree_hist), ColumnDataSource(df_sim)
 
 
 def make_dataset_sis(graph_type,
@@ -107,6 +114,13 @@ def make_dataset_sis(graph_type,
     epidemic = MarkovSIS(infection_rate, recovery_rate, G_sis)
     df_G = nx.to_pandas_edgelist(G_sis)
 
+    hist, edges = np.histogram(nx.adjacency_matrix(G_sis).dot(np.ones(N)), density=True, bins=50)
+    df_degree_hist = pd.DataFrame({'top': hist,
+                                   'bottom': 0,
+                                   'left': edges[:-1],
+                                   'right': edges[1:],
+                                   })
+
     epidemic.simulate(T, epidemic.random_seed_nodes(initial_infected))
 
     df_sim = pd.DataFrame({
@@ -132,7 +146,7 @@ def make_dataset_sis(graph_type,
     div_.text = params_text
 
     # Convert dataframe to column data source#
-    return ColumnDataSource(df_G), ColumnDataSource(df_sim)
+    return ColumnDataSource(df_G), ColumnDataSource(df_degree_hist), ColumnDataSource(df_sim)
 
 
 def make_dataset_seir(graph_type,
@@ -163,6 +177,13 @@ def make_dataset_seir(graph_type,
 
     epidemic = MarkovSEIR(exposition_rate, infection_rate, recovery_rate, G_seir)
     df_G = nx.to_pandas_edgelist(G_seir)
+
+    hist, edges = np.histogram(nx.adjacency_matrix(G_seir).dot(np.ones(N)), density=True, bins=50)
+    df_degree_hist = pd.DataFrame({'top': hist,
+                                   'bottom': 0,
+                                   'left': edges[:-1],
+                                   'right': edges[1:],
+                                   })
 
     epidemic.simulate(T, epidemic.random_seed_nodes(initial_infected))
 
@@ -201,10 +222,10 @@ def make_dataset_seir(graph_type,
     div_.text = params_text
 
     # Convert dataframe to column data source#
-    return ColumnDataSource(df_G), ColumnDataSource(df_sim), ColumnDataSource(df_xcorr)
+    return ColumnDataSource(df_G), ColumnDataSource(df_degree_hist), ColumnDataSource(df_sim), ColumnDataSource(df_xcorr)
 
 
-def make_plots_sir(src_sir_G, src_sir_sim):
+def make_plots_sir(src_sir_G, src_sir_degree_hist, src_sir_sim):
     """Create a figure object to host the plot.
     """
     ### Graph plot
@@ -217,6 +238,21 @@ def make_plots_sir(src_sir_G, src_sir_sim):
     plot_sir_G.title.text = 'SIR epidemic'
     G_sir = nx.from_pandas_edgelist(pd.DataFrame(src_sir_G.data))
     graph_renderer_sir = from_networkx(G_sir, nx.spring_layout, scale=1, center=(0,0))
+
+    plot_sir_degree_hist = figure(plot_width=400,
+                                  plot_height=550,
+                                  title='Degree distribution',
+                                  x_axis_label='degree',
+                                  )
+
+    plot_sir_degree_hist.quad(top='top',
+                              bottom='bottom',
+                              left='left',
+                              right='right',
+                              source=src_sir_degree_hist,
+                              fill_color='navy',
+                              line_color='white',
+                              )
 
     ### Epidemic simulation figure
 
@@ -259,10 +295,10 @@ def make_plots_sir(src_sir_G, src_sir_sim):
     # plot_sir_sim_recovered.legend.location = 'bottom_right'
     plot_sir_sim_recovered.yaxis.formatter=NumeralTickFormatter(format='0%')
 
-    return graph_renderer_sir, plot_sir_sim_infected, plot_sir_sim_recovered
+    return graph_renderer_sir, plot_sir_degree_hist, plot_sir_sim_infected, plot_sir_sim_recovered
 
 
-def make_plots_sis(src_sis_G, src_sis_sim):
+def make_plots_sis(src_sis_G, src_sis_degree_hist, src_sis_sim):
     """Create a figure object to host the plot.
     """
     ### Graph plot
@@ -275,6 +311,21 @@ def make_plots_sis(src_sis_G, src_sis_sim):
     plot_sis_G.title.text = 'SIS epidemic'
     G_sis = nx.from_pandas_edgelist(pd.DataFrame(src_sis_G.data))
     graph_renderer_sis = from_networkx(G_sis, nx.spring_layout, scale=1, center=(0,0))
+
+    plot_sis_degree_hist = figure(plot_width=400,
+                                  plot_height=550,
+                                  title='Degree distribution',
+                                  x_axis_label='degree',
+                                  )
+
+    plot_sis_degree_hist.quad(top='top',
+                              bottom='bottom',
+                              left='left',
+                              right='right',
+                              source=src_sis_degree_hist,
+                              fill_color='navy',
+                              line_color='white',
+                              )
 
     ### Epidemic simulation figure
 
@@ -298,10 +349,10 @@ def make_plots_sis(src_sis_G, src_sis_sim):
     # plot_sis_sim_infected.legend.location = 'bottom_right'
     plot_sis_sim_infected.yaxis.formatter=NumeralTickFormatter(format='0%')
 
-    return graph_renderer_sis, plot_sis_sim_infected
+    return graph_renderer_sis, plot_sis_degree_hist, plot_sis_sim_infected
 
 
-def make_plots_seir(src_seir_G, src_seir_sim, src_seir_xcorr):
+def make_plots_seir(src_seir_G, src_seir_degree_hist, src_seir_sim, src_seir_xcorr):
     """Create a figure object to host the plot.
     """
     ### Graph plot
@@ -314,6 +365,20 @@ def make_plots_seir(src_seir_G, src_seir_sim, src_seir_xcorr):
     plot_seir_G.title.text = 'SEIR epidemic'
     G_seir = nx.from_pandas_edgelist(pd.DataFrame(src_seir_G.data))
     graph_renderer_seir = from_networkx(G_seir, nx.spring_layout, scale=1, center=(0,0))
+
+    plot_seir_degree_hist = figure(plot_width=400,
+                                   plot_height=550,
+                                   title='Degree distribution',
+                                   x_axis_label='degree',
+                                   )
+
+    plot_seir_degree_hist.quad(top='top',
+                               bottom='bottom',
+                               left='left',
+                               right='right',source=src_seir_degree_hist,
+                               fill_color='navy',
+                               line_color='white',
+                               )
 
     ### Epidemic simulation figure
 
@@ -391,7 +456,7 @@ def make_plots_seir(src_seir_G, src_seir_sim, src_seir_xcorr):
     # plot_seir_sim_recovered.legend.location = 'bottom_right'
     plot_seir_sim_recovered.yaxis.formatter=NumeralTickFormatter(format='0%')
 
-    return graph_renderer_seir, plot_seir_sim_infected, plot_seir_xcorr_infected, plot_seir_sim_exposed, plot_seir_sim_recovered
+    return graph_renderer_seir, plot_seir_degree_hist, plot_seir_sim_infected, plot_seir_xcorr_infected, plot_seir_sim_exposed, plot_seir_sim_recovered
 
 
 def update_sir(attr, old, new):
@@ -407,18 +472,19 @@ def update_sir(attr, old, new):
     initial_infected_sir = extract_numeric_input(initial_infected_select_sir.value)
 
     # Create new graph
-    new_src_sir_G, new_src_sir_sim = make_dataset_sir(graph_type_sir,
-                                                      N_sir,
-                                                      d_sir,
-                                                      ir_sir,
-                                                      rr_sir,
-                                                      T_sir,
-                                                      initial_infected_sir,
-                                                      div_sir,
-                                                      )
+    new_src_sir_G, new_src_sir_degree_hist, new_src_sir_sim = make_dataset_sir(graph_type_sir,
+                                                                               N_sir,
+                                                                               d_sir,
+                                                                               ir_sir,
+                                                                               rr_sir,
+                                                                               T_sir,
+                                                                               initial_infected_sir,
+                                                                               div_sir,
+                                                                               )
 
     # Update the data on the plot
     src_sir_G.data.update(new_src_sir_G.data)
+    src_sir_degree_hist.data.update(new_src_sir_degree_hist.data)
     src_sir_sim.data.update(new_src_sir_sim.data)
 
     G_sir = nx.from_pandas_edgelist(src_sir_G.data)
@@ -452,18 +518,19 @@ def update_sis(attr, old, new):
     initial_infected_sis = extract_numeric_input(initial_infected_select_sis.value)
 
     # Create new graph
-    new_src_sis_G, new_src_sis_sim = make_dataset_sis(graph_type_sis,
-                                                      N_sis,
-                                                      d_sis,
-                                                      ir_sis,
-                                                      rr_sis,
-                                                      T_sis,
-                                                      initial_infected_sis,
-                                                      div_sis,
-                                                      )
+    new_src_sis_G, new_src_sis_degree_hist, new_src_sis_sim = make_dataset_sis(graph_type_sis,
+                                                                               N_sis,
+                                                                               d_sis,
+                                                                               ir_sis,
+                                                                               rr_sis,
+                                                                               T_sis,
+                                                                               initial_infected_sis,
+                                                                               div_sis,
+                                                                               )
 
     # Update the data on the plot
     src_sis_G.data.update(new_src_sis_G.data)
+    src_sis_degree_hist.data.update(new_src_sis_degree_hist.data)
     src_sis_sim.data.update(new_src_sis_sim.data)
 
     G_sis = nx.from_pandas_edgelist(src_sis_G.data)
@@ -498,19 +565,21 @@ def update_seir(attr, old, new):
     initial_infected_seir = extract_numeric_input(initial_infected_select_seir.value)
 
     # Create new graph
-    new_src_seir_G, new_src_seir_sim, new_src_seir_xcorr = make_dataset_seir(graph_type_seir,
-                                                                             N_seir,
-                                                                             d_seir,
-                                                                             er_seir,
-                                                                             ir_seir,
-                                                                             rr_seir,
-                                                                             T_seir,
-                                                                             initial_infected_seir,
-                                                                             div_seir,
-                                                                             )
+    new_src_seir_G, new_src_seir_degree_hist, new_src_seir_sim, new_src_seir_xcorr =\
+     make_dataset_seir(graph_type_seir,
+                       N_seir,
+                       d_seir,
+                       er_seir,
+                       ir_seir,
+                       rr_seir,
+                       T_seir,
+                       initial_infected_seir,
+                       div_seir,
+                       )
 
     # Update the data on the plot
     src_seir_G.data.update(new_src_seir_G.data)
+    src_seir_degree_hist.data.update(new_src_seir_degree_hist.data)
     src_seir_sim.data.update(new_src_seir_sim.data)
     src_seir_xcorr.data.update(new_src_seir_xcorr.data)
 
@@ -570,15 +639,15 @@ initial_infected_sir = extract_numeric_input(initial_infected_select_sir.value)
 
 div_sir = Div(text='<b>Network type:</b><br>', width=300, height=150)
 
-src_sir_G, src_sir_sim = make_dataset_sir(graph_type_sir,
-                                          N_sir,
-                                          d_sir,
-                                          ir_sir,
-                                          rr_sir,
-                                          T_sir,
-                                          initial_infected_sir,
-                                          div_sir,
-                                          )
+src_sir_G, src_sir_degree_hist, src_sir_sim = make_dataset_sir(graph_type_sir,
+                                                               N_sir,
+                                                               d_sir,
+                                                               ir_sir,
+                                                               rr_sir,
+                                                               T_sir,
+                                                               initial_infected_sir,
+                                                               div_sir,
+                                                               )
 
 controls_sir = WidgetBox(graph_type_select_sir,
                          N_select_sir,
@@ -598,14 +667,19 @@ plot_sir_G = Plot(plot_width=600,
                   y_range=Range1d(-1.1,1.1)
                   )
 
-graph_renderer_sir, plot_sir_sim_infected, plot_sir_sim_recovered = make_plots_sir(src_sir_G, src_sir_sim)
+graph_renderer_sir, plot_sir_degree_hist, plot_sir_sim_infected, plot_sir_sim_recovered \
+= make_plots_sir(
+    src_sir_G,
+    src_sir_degree_hist,
+    src_sir_sim,
+    )
 
 plot_sir_G.renderers.append(graph_renderer_sir)
 
 # Create a row layout
 layout_sir = layout(
     [
-        [controls_sir, plot_sir_G],
+        [controls_sir, plot_sir_G, plot_sir_degree_hist],
         [plot_sir_sim_infected],
         [plot_sir_sim_recovered],
     ],
@@ -653,15 +727,15 @@ initial_infected_sis = extract_numeric_input(initial_infected_select_sis.value)
 
 div_sis = Div(text='<b>Network type:</b><br>', width=300, height=150)
 
-src_sis_G, src_sis_sim = make_dataset_sis(graph_type_sis,
-                                          N_sis,
-                                          d_sis,
-                                          ir_sis,
-                                          rr_sis,
-                                          T_sis,
-                                          initial_infected_sis,
-                                          div_sis,
-                                          )
+src_sis_G, src_sis_degree_hist, src_sis_sim = make_dataset_sis(graph_type_sis,
+                                                               N_sis,
+                                                               d_sis,
+                                                               ir_sis,
+                                                               rr_sis,
+                                                               T_sis,
+                                                               initial_infected_sis,
+                                                               div_sis,
+                                                               )
 
 controls_sis = WidgetBox(graph_type_select_sis,
                          N_select_sis,
@@ -681,14 +755,17 @@ plot_sis_G = Plot(plot_width=600,
                   y_range=Range1d(-1.1,1.1)
                   )
 
-graph_renderer_sis, plot_sis_sim_infected = make_plots_sis(src_sis_G, src_sis_sim)
+graph_renderer_sis, plot_sis_degree_hist, plot_sis_sim_infected = make_plots_sis(src_sis_G,
+                                                                                 src_sis_degree_hist,
+                                                                                 src_sis_sim,
+                                                                                 )
 
 plot_sis_G.renderers.append(graph_renderer_sis)
 
 # Create a row layout
 layout_sis = layout(
     [
-        [controls_sis, plot_sis_G],
+        [controls_sis, plot_sis_G, plot_sis_degree_hist],
         [plot_sis_sim_infected],
     ],
 )
@@ -738,16 +815,17 @@ initial_infected_seir = extract_numeric_input(initial_infected_select_seir.value
 
 div_seir = Div(text='<b>Network type:</b><br>', width=300, height=200)
 
-src_seir_G, src_seir_sim, src_seir_xcorr = make_dataset_seir(graph_type_seir,
-                                                             N_seir,
-                                                             d_seir,
-                                                             er_seir,
-                                                             ir_seir,
-                                                             rr_seir,
-                                                             T_seir,
-                                                             initial_infected_seir,
-                                                             div_seir,
-                                                             )
+src_seir_G, src_seir_degree_hist, src_seir_sim, src_seir_xcorr =\
+ make_dataset_seir(graph_type_seir,
+                   N_seir,
+                   d_seir,
+                   er_seir,
+                   ir_seir,
+                   rr_seir,
+                   T_seir,
+                   initial_infected_seir,
+                   div_seir,
+                   )
 
 controls_seir = WidgetBox(graph_type_select_seir,
                           N_select_seir,
@@ -768,17 +846,19 @@ plot_seir_G = Plot(plot_width=600,
                    y_range=Range1d(-1.1,1.1)
                    )
 
-graph_renderer_seir, plot_seir_sim_infected, plot_seir_xcorr_infected, plot_seir_sim_exposed, plot_seir_sim_recovered = make_plots_seir(src_seir_G,
-                                                                                                                                        src_seir_sim,
-                                                                                                                                        src_seir_xcorr,
-                                                                                                                                        )
+graph_renderer_seir, plot_seir_degree_hist, plot_seir_sim_infected, plot_seir_xcorr_infected, plot_seir_sim_exposed, plot_seir_sim_recovered = \
+make_plots_seir(src_seir_G,
+                src_seir_degree_hist,
+                src_seir_sim,
+                src_seir_xcorr,
+                )
 
 plot_seir_G.renderers.append(graph_renderer_seir)
 
 # Create a row layout
 layout_seir = layout(
     [
-        [controls_seir, plot_seir_G],
+        [controls_seir, plot_seir_G, plot_seir_degree_hist],
         [plot_seir_sim_infected, plot_seir_xcorr_infected],
         [plot_seir_sim_exposed],
         [plot_seir_sim_recovered],
