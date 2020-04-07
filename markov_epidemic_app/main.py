@@ -173,6 +173,17 @@ def make_dataset_seir(graph_type,
         'fraction_recovered': epidemic.number_of_recovered/epidemic.N,
         }).set_index('transition_times')
 
+    xcorr, xcorr_tt = calculate_xcorr(epidemic.transition_times[:-1],
+                                      np.diff(epidemic.number_of_infected),
+                                      interp_kind='previous',
+                                      sampling_step=0.01,
+                                      )
+
+    df_xcorr = pd.DataFrame({
+        'xcorr_tt': xcorr_tt,
+        'xcorr': xcorr,
+        }).set_index('xcorr_tt')
+
     params_text = '<b>Network type:</b> {:s}<br>\
     <ul>\
     <li>Effective diffusion rate = {:.0%}</li>\
@@ -190,7 +201,7 @@ def make_dataset_seir(graph_type,
     div_.text = params_text
 
     # Convert dataframe to column data source#
-    return ColumnDataSource(df_G), ColumnDataSource(df_sim)
+    return ColumnDataSource(df_G), ColumnDataSource(df_sim), ColumnDataSource(df_xcorr)
 
 
 def make_plots_sir(src_sir_G, src_sir_sim):
@@ -290,7 +301,7 @@ def make_plots_sis(src_sis_G, src_sis_sim):
     return graph_renderer_sis, plot_sis_sim_infected
 
 
-def make_plots_seir(src_seir_G, src_seir_sim):
+def make_plots_seir(src_seir_G, src_seir_sim, src_seir_xcorr):
     """Create a figure object to host the plot.
     """
     ### Graph plot
@@ -314,6 +325,14 @@ def make_plots_seir(src_seir_G, src_seir_sim):
                                     y_axis_label='% population infected',
                                     )
 
+    # Blank plot with correct labels
+    plot_seir_xcorr_infected = figure(plot_width=600,
+                                      plot_height=400,
+                                      title='Autocorrelogram of new infection cases',
+                                      x_axis_label='lag',
+                                      y_axis_label='% autocorrelation',
+                                      )
+
     plot_seir_sim_exposed = figure(plot_width=900,
                                    plot_height=400,
                                    title='Number of exposed individuals',
@@ -335,6 +354,14 @@ def make_plots_seir(src_seir_G, src_seir_sim):
                                 color='color',
                                 line_color='blue',
                                 )
+
+    # original function
+    plot_seir_xcorr_infected.line('xcorr_tt',
+                                  'xcorr',
+                                  source=src_seir_xcorr,
+                                  color='color',
+                                  line_color='blue',
+                                  )
 
     # original function
     plot_seir_sim_exposed.line('transition_times',
@@ -364,7 +391,7 @@ def make_plots_seir(src_seir_G, src_seir_sim):
     # plot_seir_sim_recovered.legend.location = 'bottom_right'
     plot_seir_sim_recovered.yaxis.formatter=NumeralTickFormatter(format='0%')
 
-    return graph_renderer_seir, plot_seir_sim_infected, plot_seir_sim_exposed, plot_seir_sim_recovered
+    return graph_renderer_seir, plot_seir_sim_infected, plot_seir_xcorr_infected, plot_seir_sim_exposed, plot_seir_sim_recovered
 
 
 def update_sir(attr, old, new):
@@ -471,20 +498,21 @@ def update_seir(attr, old, new):
     initial_infected_seir = extract_numeric_input(initial_infected_select_seir.value)
 
     # Create new graph
-    new_src_seir_G, new_src_seir_sim = make_dataset_seir(graph_type_seir,
-                                                         N_seir,
-                                                         d_seir,
-                                                         er_seir,
-                                                         ir_seir,
-                                                         rr_seir,
-                                                         T_seir,
-                                                         initial_infected_seir,
-                                                         div_seir,
-                                                         )
+    new_src_seir_G, new_src_seir_sim, new_src_seir_xcorr = make_dataset_seir(graph_type_seir,
+                                                                             N_seir,
+                                                                             d_seir,
+                                                                             er_seir,
+                                                                             ir_seir,
+                                                                             rr_seir,
+                                                                             T_seir,
+                                                                             initial_infected_seir,
+                                                                             div_seir,
+                                                                             )
 
     # Update the data on the plot
     src_seir_G.data.update(new_src_seir_G.data)
     src_seir_sim.data.update(new_src_seir_sim.data)
+    src_seir_xcorr.data.update(new_src_seir_xcorr.data)
 
     G_seir = nx.from_pandas_edgelist(src_seir_G.data)
 
@@ -710,16 +738,16 @@ initial_infected_seir = extract_numeric_input(initial_infected_select_seir.value
 
 div_seir = Div(text='<b>Network type:</b><br>', width=300, height=200)
 
-src_seir_G, src_seir_sim = make_dataset_seir(graph_type_seir,
-                                             N_seir,
-                                             d_seir,
-                                             er_seir,
-                                             ir_seir,
-                                             rr_seir,
-                                             T_seir,
-                                             initial_infected_seir,
-                                             div_seir,
-                                             )
+src_seir_G, src_seir_sim, src_seir_xcorr = make_dataset_seir(graph_type_seir,
+                                                             N_seir,
+                                                             d_seir,
+                                                             er_seir,
+                                                             ir_seir,
+                                                             rr_seir,
+                                                             T_seir,
+                                                             initial_infected_seir,
+                                                             div_seir,
+                                                             )
 
 controls_seir = WidgetBox(graph_type_select_seir,
                           N_select_seir,
@@ -740,7 +768,10 @@ plot_seir_G = Plot(plot_width=600,
                    y_range=Range1d(-1.1,1.1)
                    )
 
-graph_renderer_seir, plot_seir_sim_infected, plot_seir_sim_exposed, plot_seir_sim_recovered = make_plots_seir(src_seir_G, src_seir_sim)
+graph_renderer_seir, plot_seir_sim_infected, plot_seir_xcorr_infected, plot_seir_sim_exposed, plot_seir_sim_recovered = make_plots_seir(src_seir_G,
+                                                                                                                                        src_seir_sim,
+                                                                                                                                        src_seir_xcorr,
+                                                                                                                                        )
 
 plot_seir_G.renderers.append(graph_renderer_seir)
 
@@ -748,7 +779,7 @@ plot_seir_G.renderers.append(graph_renderer_seir)
 layout_seir = layout(
     [
         [controls_seir, plot_seir_G],
-        [plot_seir_sim_infected],
+        [plot_seir_sim_infected, plot_seir_xcorr_infected],
         [plot_seir_sim_exposed],
         [plot_seir_sim_recovered],
     ],
