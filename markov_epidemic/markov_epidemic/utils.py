@@ -42,7 +42,11 @@ def period_estimator(transition_times: np.ndarray,
     """
     # Calculte the autocorrelogram of the increments rather than the signal to better
     # capture periodicity (the signal itself is higly non-stationary)
-    xcorr, xcorr_tt = calculate_xcorr(transition_times[:-1], np.diff(number_of_infected))
+    xcorr, xcorr_tt = calculate_xcorr(transition_times[:-1],
+                                      np.diff(number_of_infected),
+                                      interp_kind=interp_kind,
+                                      sampling_stepsampling_step=,
+                                      )
 
      # Smooth autocorrelogram to detect real peaks
     xcorr_smooth = savgol_filter(xcorr, savgol_window, savgol_polyorder)
