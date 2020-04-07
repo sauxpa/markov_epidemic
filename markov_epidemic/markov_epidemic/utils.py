@@ -21,7 +21,7 @@ def calculate_xcorr(transition_times: np.ndarray,
 
     # Calculate autocorrelogram
     xcorr = np.correlate(signal_resampled, signal_resampled, 'full')
-    xcorr_tt = np.concatenate([tt, tt[1:]+tt[-1]])
+    xcorr_tt = np.concatenate([-tt[::-1], tt[1:]])
     return xcorr, xcorr_tt
 
 
