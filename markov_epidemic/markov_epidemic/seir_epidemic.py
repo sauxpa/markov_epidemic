@@ -2,6 +2,7 @@ import numpy as np
 import networkx as nx
 from .markov_epidemic import MarkovEpidemic
 
+
 class MarkovSEIR(MarkovEpidemic):
     """Class to simulate Markov epidemics
     in the Susceptible-Exposed-Infected-Recovered model.
@@ -11,8 +12,8 @@ class MarkovSEIR(MarkovEpidemic):
                  infection_rate: float,
                  recovery_rate: float,
                  G: nx.Graph,
-                 simulation_method: str='fastest',
-                ) -> None:
+                 simulation_method: str = 'fastest',
+                 ) -> None:
         self._exposition_rate = exposition_rate
         self._infection_rate = infection_rate
         self._recovery_rate = recovery_rate
@@ -37,6 +38,7 @@ class MarkovSEIR(MarkovEpidemic):
     @property
     def exposition_rate(self) -> float:
         return self._exposition_rate
+
     @exposition_rate.setter
     def exposition_rate(self, new_exposition_rate: float) -> None:
         self._exposition_rate = new_exposition_rate
@@ -44,6 +46,7 @@ class MarkovSEIR(MarkovEpidemic):
     @property
     def infection_rate(self) -> float:
         return self._infection_rate
+
     @infection_rate.setter
     def infection_rate(self, new_infection_rate: float) -> None:
         self._infection_rate = new_infection_rate
@@ -51,6 +54,7 @@ class MarkovSEIR(MarkovEpidemic):
     @property
     def recovery_rate(self) -> float:
         return self._recovery_rate
+
     @recovery_rate.setter
     def recovery_rate(self, new_recovery_rate: float) -> None:
         self._recovery_rate = new_recovery_rate
@@ -61,6 +65,13 @@ class MarkovSEIR(MarkovEpidemic):
         each transition time of the simulated epidemic.
         """
         return np.sum(self.X == self.exposed, axis=1)
+
+    @property
+    def number_of_recovered(self):
+        """Returns the number of recovered individuals at
+        each transition time of the simulated epidemic.
+        """
+        return np.sum(self.X == self.recovered, axis=1)
 
     @property
     def effective_diffusion_rate(self) -> float:
@@ -76,7 +87,9 @@ class MarkovSEIR(MarkovEpidemic):
         elif x == self.infected:
             return self.recovered
         elif x == self.recovered:
-            raise ValueError('Should not have transition starting from recovered state')
+            raise ValueError(
+                'Should not have transition starting from recovered state'
+                )
         else:
             raise ValueError('Unknown state')
 
@@ -88,24 +101,31 @@ class MarkovSEIR(MarkovEpidemic):
 
         return np.array(
             [
-                0 if Xt[node] == self.recovered\
+                0 if Xt[node] == self.recovered
                 else (
-                    self.exposition_rate * num_infected_neighbors[node] if Xt[node] == self.susceptible \
+                    self.exposition_rate * num_infected_neighbors[node]
+                    if Xt[node] == self.susceptible
                     else (
-                        self.infection_rate if Xt[node] == self.exposed else self.recovery_rate
+                        self.infection_rate if Xt[node] == self.exposed
+                        else self.recovery_rate
                         )
-                    )\
+                    )
                 for node in self.G.nodes
             ]
         )
 
-    def deterministic_baseline_ODEs(self, t:float, y: np.ndarray) -> np.ndarray:
+    def deterministic_baseline_ODEs(self,
+                                    t: float,
+                                    y: np.ndarray
+                                    ) -> np.ndarray:
         """ y = (S, E, I, R)
         """
         return np.array(
             [
-                -self.exposition_rate * self.k_deterministic * y[0] * y[2] / self.N,
-                self.exposition_rate * self.k_deterministic * y[0] * y[2] / self.N - self.infection_rate * y[1],
+                -self.exposition_rate * self.k_deterministic
+                * y[0] * y[2] / self.N,
+                self.exposition_rate * self.k_deterministic
+                * y[0] * y[2] / self.N - self.infection_rate * y[1],
                 self.infection_rate * y[1] - self.recovery_rate * y[2],
                 self.recovery_rate * y[2],
             ]

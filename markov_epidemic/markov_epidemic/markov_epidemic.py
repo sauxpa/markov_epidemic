@@ -11,8 +11,8 @@ class MarkovEpidemic(abc.ABC):
     """
     def __init__(self,
                  G: nx.Graph,
-                 simulation_method: str='fastest',
-                ) -> None:
+                 simulation_method: str = 'fastest',
+                 ) -> None:
         self._G = G
         self._simulation_method = simulation_method
 
@@ -35,6 +35,7 @@ class MarkovEpidemic(abc.ABC):
     @property
     def G(self) -> nx.Graph:
         return self._G
+
     @G.setter
     def G(self, new_G: nx.Graph) -> None:
         self.flush_graph()
@@ -43,6 +44,7 @@ class MarkovEpidemic(abc.ABC):
     @property
     def simulation_method(self) -> str:
         return self._simulation_method
+
     @simulation_method.setter
     def simulation_method(self, new_simulation_method: str) -> None:
         self._simulation_method = new_simulation_method
@@ -153,8 +155,8 @@ class MarkovEpidemic(abc.ABC):
                                T: float,
                                initial_infected: int,
                                k: int,
-                               n_t_eval: int=100,
-                              ) -> tuple:
+                               n_t_eval: int = 100,
+                               ) -> tuple:
         """Solves the deterministic baseline ODEs if they are provided in
         the child class.
         Corresponds to the mean-field approximation of the epidemic under
@@ -167,10 +169,13 @@ class MarkovEpidemic(abc.ABC):
             self.deterministic_baseline_init(initial_infected),
             t_eval=np.linspace(0.0, T, n_t_eval),
         )
-        assert solver.success, 'Integration of deterministic baseline ODEs failed.'
+        assert solver.success, 'Integration of deterministic ODEs failed.'
         return solver.t, solver.y
 
-    def deterministic_baseline_ODEs(self, t:float, y: np.ndarray) -> np.ndarray:
+    def deterministic_baseline_ODEs(self,
+                                    t: float,
+                                    y: np.ndarray
+                                    ) -> np.ndarray:
         raise NotImplementedError
 
     def deterministic_baseline_init(self, initial_infected: int) -> np.ndarray:
@@ -202,7 +207,7 @@ class MarkovEpidemic(abc.ABC):
         """
         pass
 
-    def simulate(self, T:float, x0: np.ndarray=np.empty(0)) -> None:
+    def simulate(self, T: float, x0: np.ndarray = np.empty(0)) -> None:
         """Simulate diffusion of Markov epidemic up to time T.
         """
         t = 0.0
@@ -227,34 +232,40 @@ class MarkovEpidemic(abc.ABC):
             if self.is_epidemic_over(Xt):
                 break
 
-            # At each step, rates[i] contains the infection/curing rate of node i
+            # At each step, rates[i] contains
+            # the infection/curing rate of node i
             rates = self.transition_rates(Xt)
 
             if self.simulation_method == 'fastest':
-                # At each step, holding_times[i] contains the holding time of node i
-                # Unsurprisingly, passing the array rates as the scale argument instead of
-                # repeating it for every single rate is faster, most likely due to
-                # neat optimization in numpy.
-                # However, quite surprisingly, this also beats the "fast" method that
-                # only requires a single exponential simulation.
-                # Why? My money is on the quite slow random.choice below (but that's not that
-                # easy to profile due to the nature of the epidemic simulation -- just know that
-                # both the fast and fastest method are... well... fast enough.)
+                # At each step, holding_times[i] contains
+                # the holding time of node i.
+                # Unsurprisingly, passing the array rates as the scale argument
+                # instead of repeating it for every single rate is faster, most
+                # likely due to neat optimization in numpy.
+                # However, quite surprisingly, this also beats the "fast"
+                # method that only requires a single exponential simulation.
+                # Why? My money is on the quite slow random.choice below (but
+                # that's not that easy to profile due to the nature of the
+                # epidemic simulation -- just know that both the fast and
+                # fastest method are... well... fast enough.)
                 holding_times = np.random.exponential(scale=1/rates)
                 # The smallest holding time is the actual transition time
                 i = np.argmin(holding_times)
                 dt = holding_times[i]
                 node = self.nodes_list[i]
             elif self.simulation_method == 'fast':
-                # Instead of simulating N independant exponential distributions,
-                # simulate a single one with parameter equal to the sum of
-                # the individual parameters.
+                # Instead of simulating N independant exponential
+                # distributions, simulate a single one with parameter equal to
+                # the sum of the individual parameters.
                 total_rate = np.sum(rates)
                 node = np.random.choice(self.G.nodes, p=rates/total_rate)
                 dt = np.random.exponential(scale=1/total_rate)
             else:
-                # At each step, holding_times[i] contains the holding time of node i
-                holding_times = [np.random.exponential(scale=1/rate) for rate in rates]
+                # At each step, holding_times[i] contains
+                # the holding time of node i
+                holding_times = [
+                    np.random.exponential(scale=1/rate) for rate in rates
+                    ]
                 # The smallest holding time is the actual transition time
                 i = np.argmin(holding_times)
                 dt = holding_times[i]
