@@ -6,7 +6,7 @@ This repo contains standalone code for simulating epidemics and study the influe
 
 Enjoy while you stay indoors helping us reduce our spectral radius :) 
 
-**To install** : clone repo and pip install -e markov_epidemic/
+**To install** : clone repo and pip install -e markov_epidemic/ (or see https://pypi.org/project/markov-epidemic/)
 
 **To run the app** : run bokeh serve --show markov_epidemic_app/
 
