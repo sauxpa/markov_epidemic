@@ -10,6 +10,14 @@ Enjoy while you stay indoors helping us reduce our spectral radius :)
 
 **To run the app** : run bokeh serve --show markov_epidemic_app/
 
+
+### France data vs SEIR
+
+<img src="./seir_france.png"
+     alt="France_SEIR"
+     style="float: left; margin-right: 10px;" />
+
+
 ### Susceptible-Infected-Recovered (SIR)
 
 <img src="./sir_epidemic.png"
