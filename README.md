@@ -12,41 +12,40 @@ Enjoy while you stay indoors helping us reduce our spectral radius :)
 
 ### France data vs SEIR
 
-<img src="./seir_france.png"
+<img src="./pictures/seir_france.png"
      alt="France_SEIR"
      style="float: left; margin-right: 10px;" />
 
 ### Markov models
 
-<img src="./description_1.png"
+<img src="./pictures/description_1.png"
      alt="description_1"
      style="float: left; margin-right: 10px;" />
 
 
-<img src="./description_2.png"
+<img src="./pictures/description_2.png"
      alt="description_2"
      style="float: left; margin-right: 10px;" />
  
  
-<img src="./description_3.png"
+<img src="./pictures/description_3.png"
      alt="description_3"
      style="float: left; margin-right: 10px;" />
      
 ### Susceptible-Infected-Recovered (SIR)
 
-
-<img src="./sir_epidemic.png"
+<img src="./pictures/sir_epidemic.png"
      alt="SIR"
      style="float: left; margin-right: 10px;" />
 
 ### Susceptible-Infected-Susceptible (SIS)
 
-<img src="./sis_epidemic.png"
+<img src="./pictures/sis_epidemic.png"
      alt="SIS"
      style="float: left; margin-right: 10px;" />
 
 ### Susceptible-Exposed-Infected-Susceptible (SEIR)
 
-<img src="./seir_epidemic.png"
+<img src="./pictures/seir_epidemic.png"
      alt="SEIR"
      style="float: left; margin-right: 10px;" />
