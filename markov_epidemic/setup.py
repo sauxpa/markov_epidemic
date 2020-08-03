@@ -5,7 +5,8 @@ with open("README.md", "r") as fh:
 
 setup(
     name='markov_epidemic',
-    version='1.0.1',
+    packages=['markov_epidemic'],
+    version='1.0.2',
     author="Patrick Saux",
     author_email="patrick.jr.saux@gmail.com",
     description="Library for stochastic simulation and study of epidemics.",
