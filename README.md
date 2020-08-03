@@ -8,6 +8,8 @@ Enjoy while you stay indoors helping us reduce our spectral radius :)
 
 **To install** : clone repo and pip install -e markov_epidemic/ (or see https://pypi.org/project/markov-epidemic/)
 
+Also check out the Bokeh app to play with different networks and epidemic models dynamically:
+
 **To run the app** : run bokeh serve --show markov_epidemic_app/
 
 ### France data vs SEIR
